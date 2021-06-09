@@ -1,0 +1,6 @@
+ Te cuento cosas a tener en cuenta:
+
+-	Online en azul, presencial en negro.
+-	A la derecha de la tabla de semanas y fechas está indicado el número de prácticas de cada laboratorio y su capacidad entre paréntesis.
+-	En los online, se puede solapar a la misma hora dos labos con dos profesores distintos. En presencial no, obvio.
+-	En los presenciales, según esta planificación, no hay problema de solape porque sólo son Instrumentación y Potencia y se dan en laboratorios distintos, si quieres lo complicamos en la próxima iteración metiendo también el 4º semestre
