@@ -10,7 +10,7 @@ import string
 from itertools import product
 import pandas as pd
 from pathlib import Path
-import random
+from collections import deque
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -28,7 +28,7 @@ asignaturas = pd.DataFrame(index=['instrumentacion', 'potencia', 'robotica'],
                                  'num_sesiones': [3, 2, 3],
                                  'horario_sesiones': [['MI09', 'MI11', 'JU09', 'JU11', 'VI11'], ['MI11', 'JU11', 'VI09'], ['MA11', 'MI09', 'MI11']],
                                  'num_subgrupos': [4, 7, 3],
-                                 'semana_inicial': [3, 3, 3]
+                                 'semana_inicial': [3, 1, 3]
                                  })
 
 grupos_grado = pd.DataFrame(index=['A302', 'A309', 'EE309'],
@@ -42,7 +42,7 @@ def semanas_subgrupo(nombre_asignatura, subgrupo):
     # subgrupo = 'MA11-C'
     
     semana_inicial = asignaturas.loc[nombre_asignatura, 'semana_inicial']
-    semana_subgrupo = ord(subgrupo[-1]) - 64
+    semana_subgrupo = ord(subgrupo[-1]) - 65
     num_sesiones = asignaturas.loc[nombre_asignatura, 'num_sesiones']
     
     semanas_sesiones = [sem for sem in range(num_sesiones) + semana_inicial + semana_subgrupo]
@@ -77,6 +77,8 @@ for _, asignatura in asignaturas.iterrows():
     lista_subgrupos_asignatura = list(map(lambda x: str(x[0]) + '-' + str(x[1]), product(
         asignatura['horario_sesiones'], string.ascii_uppercase[:num_subgrupos_sesion])))
 
+    ciclo_subgrupos_asignatura = deque(lista_subgrupos_asignatura)
+    
     # baraja estudiantes
     estudiantes_asignatura = estudiantes_asignatura.sample(
         frac=1, random_state=SEMILLA_RND)
@@ -85,14 +87,17 @@ for _, asignatura in asignaturas.iterrows():
     lista_estudiantes_asignatura = estudiantes_asignatura.sort_values(
         by=['prioridad_reparto_grupo_grado'])
 
+    n = 0
     for idx_correo, estudiante in lista_estudiantes_asignatura.iterrows():
         logging.info('\n\nEstudiante: %s , grupo: %s', idx_correo,
                      estudiante['Grupo matrícula'][-6:-1])
         # aleatoriza la lista de subgrupos para cada estudiante que se asigna
         # random.seed(SEMILLA_RND)
         # random.shuffle(lista_subgrupos_asignatura)
-        
-        for subgrupo_a_asignar in lista_subgrupos_asignatura:
+        if idx_correo == 'jorge.devivar.adrada@alumnos.upm.es':
+            print('asdf')
+
+        for subgrupo_a_asignar in ciclo_subgrupos_asignatura:
             subgrupos_tamaños = lista_estudiantes_asignatura.groupby(
                 f'subgrupo_{asignatura.name}').size()
             # cuenta plazas de cada subgrupo. La primera vez está vacío, por lo que se comprueba
@@ -150,9 +155,10 @@ for _, asignatura in asignaturas.iterrows():
                              subgrupo_a_asignar)
 
             # comprueba si no consigue asignar subgrupo
-            if subgrupo_a_asignar == lista_subgrupos_asignatura[-1]:
+            if subgrupo_a_asignar == ciclo_subgrupos_asignatura[-1]:
                 logging.error(
                     'Asignatura %s No hay subgrupo disponible para %s', asignatura.name, idx_correo)
+        ciclo_subgrupos_asignatura.rotate(1) 
 
     logging.error('\n\nLista estudiantes sin grupo de %s', asignatura.name)
     logging.error(
