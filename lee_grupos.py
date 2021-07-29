@@ -142,11 +142,9 @@ for _, asignatura in asignaturas.iterrows():
                             break # refactorizar. Faltaría un doble break!
 
                 else:
-                    # estudiante sin restricciones
-                    cond_sin_restr = estudiante['limitaciones_grupo_grado'] is None
-                    # estudiante con restricciones, se mira si no está vacía la lista de limitaciones y cual es su grupo horario. Si es compatible lo coge
-                    cond_con_restr = estudiante['limitaciones_grupo_grado'] and (sesion_subgrupo_a_asignar in estudiante['limitaciones_grupo_grado'][f'{asignatura.name}'])
-                    if cond_sin_restr or cond_con_restr:
+                    # estudiante sin restricciones: limitaciones está vacía (None)
+                    # estudiante con restricciones: se mira si no está vacía la lista de limitaciones y cual es su grupo horario. Si es compatible lo coge
+                    if (estudiante['limitaciones_grupo_grado'] is None) or (sesion_subgrupo_a_asignar in estudiante['limitaciones_grupo_grado'][f'{asignatura.name}']):
                         logging.info('%s asignado a %s',
                                      asignatura.name, subgrupo_a_asignar)
                         lista_estudiantes_asignatura.at[idx_correo,
