@@ -23,16 +23,16 @@ logging.basicConfig(level='INFO', handlers=[
 SEMILLA_RND = 123
 PATH_LISTAS = Path('listas_apolo')
 
-asignaturas = pd.DataFrame(index=['instrumentacion', 'potencia', 'robotica'],
-                           data={'plazas_sesion': [8, 8, 20],
-                                 'num_sesiones': [3, 2, 3],
-                                 'horario_sesiones': [['MI09', 'MI11', 'JU09', 'JU11', 'VI11'], ['MI11', 'JU11', 'VI09'], ['MA11', 'MI09', 'MI11']],
-                                 'num_subgrupos': [4, 7, 3],
-                                 'semana_inicial': [3, 1, 3],
+asignaturas = pd.DataFrame(index=['instrumentacion', 'potencia', 'robotica','infind','automatizacion'],
+                           data={'plazas_sesion': [8, 8, 20, 25, 30],
+                                 'num_sesiones': [3, 2, 3, 6, 5],
+                                 'horario_sesiones': [['MI09', 'MI11', 'JU09', 'JU11', 'VI11'], ['MI11', 'JU11', 'VI09'], ['MA11', 'MI09', 'MI11'],['LU09', 'LU11','MA09','MA11','MI09'],['MA09','MA11','JU09','JU11']],
+                                 'num_subgrupos': [4, 7, 3, 2, 2],
+                                 'semana_inicial': [3, 1, 3, 3, 5],
                                  })
 
 grupos_grado = pd.DataFrame(index=['A302', 'A309', 'EE309'],
-                            data={'limitaciones_sesion': [None, None, {'instrumentacion': 'MI11', 'potencia': 'MI11', 'robotica': 'MA11'}],
+                            data={'limitaciones_sesion': [None, None, {'instrumentacion': 'MI11', 'potencia': 'MI11', 'robotica': 'MA11','infind':'MA09','automatizacion':'MA09'}],
                                   'prioridad_reparto': [3, 2, 1],
                                   })
 
