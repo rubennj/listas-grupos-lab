@@ -23,16 +23,16 @@ logging.basicConfig(level='INFO', handlers=[
 SEMILLA_RND = 123
 PATH_LISTAS = Path('listas_apolo')
 
-asignaturas = pd.DataFrame(index=['instrumentacion', 'potencia', 'robotica','infind','automatizacion'],
+asignaturas = pd.DataFrame(index=['instrumentacion', 'potencia', 'robotica', 'infind', 'automatizacion'],
                            data={'plazas_sesion': [8, 8, 20, 25, 30],
                                  'num_sesiones': [3, 2, 3, 6, 5],
-                                 'horario_sesiones': [['MI09', 'MI11', 'JU09', 'JU11', 'VI11'], ['MI11', 'JU11', 'VI09'], ['MA11', 'MI09', 'MI11'],['LU09', 'LU11','MA09','MA11','MI09'],['MA09','MA11','JU09','JU11']],
+                                 'horario_sesiones': [['MI09', 'MI11', 'JU09', 'JU11', 'VI11'], ['MI11', 'JU11', 'VI09'], ['MA11', 'MI09', 'MI11'], ['LU09', 'LU11', 'MA09', 'MA11', 'MI09'], ['MA09', 'MA11', 'JU09', 'JU11']],
                                  'num_subgrupos': [4, 7, 3, 2, 2],
                                  'semana_inicial': [3, 1, 3, 3, 5],
                                  })
 
 grupos_grado = pd.DataFrame(index=['A302', 'A309', 'EE309'],
-                            data={'limitaciones_sesion': [None, None, {'instrumentacion': 'MI11', 'potencia': 'MI11', 'robotica': 'MA11','infind':'MA09','automatizacion':'MA09'}],
+                            data={'limitaciones_sesion': [None, None, {'instrumentacion': 'MI11', 'potencia': 'MI11', 'robotica': 'MA11', 'infind': 'MA09', 'automatizacion': 'MA09'}],
                                   'prioridad_reparto': [3, 2, 1],
                                   })
 
@@ -98,6 +98,7 @@ def asigna_subgrupo_estudiante_semanas(subgrupos_ya_asignados, lista_estudiantes
         if any(item in semanas_subgrupos_ya_asignados for item in semanas_subgrupos_a_asignar):
             logging.error(
                 '%s no consigue asignar el subgrupo %s con semanas %s. Coinciden alguna semana con las del subgrupo %s de %s: %s', asignatura.name, subgrupo_a_asignar, semanas_subgrupos_a_asignar, subgrupo_ya_asignado, asignatura_subgrupo_asignado, semanas_subgrupos_ya_asignados)
+            return False
         else:
             logging.info('%s asignado a %s (semanas %s)',
                          asignatura.name, subgrupo_a_asignar, semanas_subgrupos_a_asignar)
@@ -133,13 +134,14 @@ for _, asignatura in asignaturas.iterrows():
 
     for idx_estudiante, estudiante in lista_estudiantes_asignatura.iterrows():
         logging.info('\n\nEstudiante: %s , grupo: %s', idx_estudiante,
-                      estudiante['Grupo matrícula'][-6:-1])
-        # if idx_estudiante == 'miguel.aspiroz.delacalle@alumnos.upm.es':
-        #     print('asdf')
+                     estudiante['Grupo matrícula'][-6:-1])
+        if idx_estudiante == 'rodrigo.batal.fernandez@alumnos.upm.es':
+            print('asdf')
 
         for subgrupo_a_asignar in list(ciclo_subgrupos_asignatura):
             ciclo_subgrupos_asignatura.rotate(1)
-            logging.info('\n\nAsignatura %s Subgrupo: %s', asignatura.name, subgrupo_a_asignar)
+            logging.info('\n\nAsignatura %s Subgrupo: %s',
+                         asignatura.name, subgrupo_a_asignar)
             subgrupos_tamaños = lista_estudiantes_asignatura.groupby(
                 f'subgrupo_{asignatura.name}').size()
             # cuenta plazas de cada subgrupo. La primera vez está vacío, por lo que se comprueba
@@ -154,7 +156,7 @@ for _, asignatura in asignaturas.iterrows():
 
                 if sesion_subgrupo_a_asignar in sesiones_subgrupos_ya_asignados:
                     if asigna_subgrupo_estudiante_semanas(
-                        subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
+                            subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
                         break
                 else:
                     # estudiante sin restricciones: limitaciones_sesion está vacía
