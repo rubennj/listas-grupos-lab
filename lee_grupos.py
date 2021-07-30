@@ -89,17 +89,18 @@ def lee_subgrupos_asignados_estudiante(subgrupos_tamaños, asignatura, lista_est
 
 
 def asigna_subgrupo_estudiante_semanas(subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
+    ultimo_subgrupo = list(subgrupos_ya_asignados.keys())[-1]
     for subgrupo_ya_asignado in subgrupos_ya_asignados:
         asignatura_subgrupo_asignado = subgrupos_ya_asignados[subgrupo_ya_asignado].split('_')[1]
         semanas_subgrupos_ya_asignados = semanas_subgrupo(
             asignatura_subgrupo_asignado, subgrupo_ya_asignado)
         semanas_subgrupos_a_asignar = semanas_subgrupo(
             asignatura.name, subgrupo_a_asignar)
-        if any(item in semanas_subgrupos_ya_asignados for item in semanas_subgrupos_a_asignar):
+        if any(semana in semanas_subgrupos_ya_asignados for semana in semanas_subgrupos_a_asignar):
             logging.error(
                 '%s no consigue asignar el subgrupo %s con semanas %s. Coinciden alguna semana con las del subgrupo %s de %s: %s', asignatura.name, subgrupo_a_asignar, semanas_subgrupos_a_asignar, subgrupo_ya_asignado, asignatura_subgrupo_asignado, semanas_subgrupos_ya_asignados)
             return False
-        else:
+        elif subgrupo_ya_asignado == ultimo_subgrupo:
             logging.info('%s asignado a %s (semanas %s)',
                          asignatura.name, subgrupo_a_asignar, semanas_subgrupos_a_asignar)
             lista_estudiantes_asignatura.at[idx_estudiante,
@@ -155,6 +156,7 @@ for _, asignatura in asignaturas.iterrows():
                 sesion_subgrupo_a_asignar = subgrupo_a_asignar.split('-')[0]
 
                 if sesion_subgrupo_a_asignar in sesiones_subgrupos_ya_asignados:
+                    # si asigna el subgrupo teniendo en cuenta las semanas mediante asigna_subgrupo_estudiante_semanas() (BREAK, deja de buscar más subgrupos), si no sigue buscando
                     if asigna_subgrupo_estudiante_semanas(
                             subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
                         break
