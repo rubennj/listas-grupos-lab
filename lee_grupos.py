@@ -136,8 +136,8 @@ for _, asignatura in asignaturas.iterrows():
     for idx_estudiante, estudiante in lista_estudiantes_asignatura.iterrows():
         logging.info('\n\nEstudiante: %s , grupo: %s', idx_estudiante,
                      estudiante['Grupo matrícula'][-6:-1])
-        if idx_estudiante == 'rodrigo.batal.fernandez@alumnos.upm.es':
-            print('asdf')
+        # if idx_estudiante == 'a.amescuah@alumnos.upm.es':
+            # print('asdf')
 
         for subgrupo_a_asignar in list(ciclo_subgrupos_asignatura):
             ciclo_subgrupos_asignatura.rotate(1)
@@ -195,11 +195,11 @@ for _, asignatura in asignaturas.iterrows():
     lista_estudiantes_subgrupos = pd.concat(l, axis=1)
 
 # %% Combina subgrupos con datos de estudiantes
-files = PATH_LISTAS.glob('*.xlsx')
+archivos = PATH_LISTAS.glob('*.xlsx')
 
 df = pd.DataFrame()
-for f in files:
-    lista_datos_grupo = pd.read_excel(f, index_col='Email').drop(columns=['Cód. Asignatura', 'Nombre Asignatura', 'Nº Orden'])[:-1]
+for archivo in archivos:
+    lista_datos_grupo = pd.read_excel(archivo, index_col='Email').drop(columns=['Cód. Asignatura', 'Nombre Asignatura', 'Nº Orden'])[:-1]
     df = pd.concat([df, lista_datos_grupo])
 
 lista_estudiantes_datos = df[~df.index.duplicated()].sort_index()
