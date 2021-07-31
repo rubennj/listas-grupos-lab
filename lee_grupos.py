@@ -16,7 +16,7 @@ for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 
 logging.basicConfig(level='INFO', handlers=[
-    logging.FileHandler("debug.log", mode='w'),
+    logging.FileHandler("debug.log", mode='w+'),
     logging.StreamHandler()]
 )
 
@@ -76,7 +76,7 @@ def lee_subgrupos_asignados_estudiante(subgrupos_tamaños, asignatura, lista_est
         # si el estudiante ya tiene un subgrupo de una asignación previa, se obtiene
         if idx_estudiante in lista_estudiantes_subgrupos.index:
             subgrupos_ya_asignados = {
-                subgrupo: asignatura_subgrupo for asignatura_subgrupo, subgrupo in lista_estudiantes_subgrupos.loc[idx_estudiante].items() if subgrupo != '-' and pd.notna(subgrupo)}
+                subgrupo: asignatura_subgrupo for asignatura_subgrupo, subgrupo in lista_estudiantes_subgrupos.loc[idx_estudiante].items() if subgrupo != '-' and 'subgrupo_' in asignatura_subgrupo and pd.notna(subgrupo)}
             logging.info('Asignatura %s - sesiones previamente asignadas %s',
                          asignatura.name, subgrupos_ya_asignados)
             sesiones_subgrupos_ya_asignados = [sesion.split(
@@ -194,6 +194,15 @@ for _, asignatura in asignaturas.iterrows():
     l.append(lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'])
     lista_estudiantes_subgrupos = pd.concat(l, axis=1)
 
-# %%
-# lista_total[0].join(lista_estudiantes_subgrupos, lsuffix='_').join(lista_total[1], lsuffix='-').to_excel('asdf.xlsx')
-lista_estudiantes_subgrupos.to_excel('lista_subgrupos.xlsx')
+# %% Combina subgrupos con datos de estudiantes
+files = PATH_LISTAS.glob('*.xlsx')
+
+df = pd.DataFrame()
+for f in files:
+    lista_datos_grupo = pd.read_excel(f, index_col='Email').drop(columns=['Cód. Asignatura', 'Nombre Asignatura', 'Nº Orden'])[:-1]
+    df = pd.concat([df, lista_datos_grupo])
+
+lista_estudiantes_datos = df[~df.index.duplicated()].sort_index()
+
+lista_junta = pd.merge(lista_estudiantes_datos, lista_estudiantes_subgrupos, left_index=True, right_index=True)
+lista_junta.to_excel('lista_subgrupos.xlsx')
