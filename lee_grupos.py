@@ -63,10 +63,11 @@ def lee_estudiantes_asignatura(asignatura):
     for i, grupo_grado in grupos_grado.iterrows():
         # Abre los excel con los alumnos matriculados en cada grupo
         lista_grado = pd.read_excel(
-            PATH_LISTAS / f'{asignatura.name} {grupo_grado.name}.xlsx', index_col='Email')[:-1]
-
-        # Añade la columna limitaciones_sesion_grupo_grado 
-        lista_grado['limitaciones_sesion_grupo_grado'] = None # Como algunos seran None pues se añade antes para q no haya problemas
+            PATH_LISTAS / f'{asignatura.name} {grupo_grado.name}.xlsx', dtype={'Nº Expediente en Centro':str})[:-1]
+        lista_grado.set_index('Nº Expediente en Centro', inplace=True)
+        
+        # Añade la columna limitaciones_sesion_grupo_grado
+        lista_grado['limitaciones_sesion_grupo_grado'] = None # Como algunos seran None pues se añade antes para que no haya problemas
         lista_grado['limitaciones_sesion_grupo_grado'] = lista_grado['limitaciones_sesion_grupo_grado'].apply(
             lambda x: grupo_grado['limitaciones_sesion'])
 
@@ -114,13 +115,6 @@ def asigna_subgrupo_estudiante_semanas(subgrupos_ya_asignados, lista_estudiantes
         
         sesion_subgrupo_ya_asignado = subgrupo_ya_asignado.split('-')[0]
 
-        # if (idx_estudiante == 'miguel.aspiroz.delacalle@alumnos.upm.es'):
-        #     print(idx_estudiante)
-        #     print(asignatura_subgrupo_asignado)
-        #     print(subgrupo_ya_asignado, semanas_subgrupos_ya_asignados)
-        #     print(subgrupo_a_asignar, semanas_subgrupos_a_asignar)
-        #     input()
-
         # Si coinciden (los subgrupos y) las semanas se guarda un mensaje de error como que el alumno no tiene grupo
         # if any(semana in semanas_subgrupos_ya_asignados for semana in semanas_subgrupos_a_asignar):
         # Se añade una condición para que compruebe el subgrupo (faltaba) y las semanas
@@ -146,7 +140,7 @@ for _, asignatura in asignaturas.iterrows():
 
     # Recoge los estudiantes de los excel de cada asignatura y añade las limitaciones por grupo y sus prioridad
     estudiantes_asignatura = lee_estudiantes_asignatura(asignatura)
-    
+    # estudiantes_asignatura.set_index('Nº Expediente en Centro')
     # Genera e inicializa a 0 en la lista de estudiantes de la asignatura una columna vacía con el subgrupo
     estudiantes_asignatura[f'subgrupo_{asignatura.name}'] = '-'
 
@@ -185,8 +179,6 @@ for _, asignatura in asignaturas.iterrows():
             # Recoge el numero de estudiantes por cada asignatura de cada subgrupo. Cuenta los que hay en cada subgrupo
             subgrupos_tamaños = lista_estudiantes_asignatura.groupby(
                 f'subgrupo_{asignatura.name}').size()
-            # if(asignatura.name == 'automatizacion'):
-            #     print(subgrupos_tamaños)
 
             # Cuenta plazas de cada subgrupo. La primera vez está vacío, por lo que se comprueba
             if subgrupo_a_asignar not in subgrupos_tamaños or subgrupos_tamaños[subgrupo_a_asignar] < asignatura['plazas_sesion']:
@@ -201,11 +193,6 @@ for _, asignatura in asignaturas.iterrows():
 
                 # Si esta en el mismo dia y hora pues entra para saber si coincide las semanas
                 if sesion_subgrupo_a_asignar in sesiones_subgrupos_ya_asignados:
-
-                    # print(idx_estudiante)
-                    # print(sesion_subgrupo_a_asignar)
-                    # print(sesiones_subgrupos_ya_asignados)
-                    # input()
                     # Se asigna el subgrupo teniendo en cuenta las semanas mediante asigna_subgrupo_estudiante_semanas() (BREAK, deja de buscar más subgrupos), si no sigue buscando
                     if asigna_subgrupo_estudiante_semanas(
                             subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
@@ -242,10 +229,8 @@ for _, asignatura in asignaturas.iterrows():
         by=f'subgrupo_{asignatura.name}').size())
         
     # lista_total.append(lista_estudiantes_asignatura)
-
     l.append(lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'])
     lista_estudiantes_subgrupos = pd.concat(l, axis=1)
-
 
 # %% Combina subgrupos con datos de estudiantes
 archivos = PATH_LISTAS.glob('*.xlsx')
@@ -253,10 +238,11 @@ archivos = PATH_LISTAS.glob('*.xlsx')
 df = pd.DataFrame()
 # Une todos los estudiantes de los archivos excel
 for archivo in archivos:
-    lista_datos_grupo = pd.read_excel(archivo, index_col='Email').drop(columns=['Cód. Asignatura', 'Nombre Asignatura', 'Nº Orden'])[:-1]
+    lista_datos_grupo = pd.read_excel(archivo, dtype={'Nº Expediente en Centro':str}).drop(columns=['Cód. Asignatura', 'Nombre Asignatura', 'Nº Orden'])[:-1]
+    lista_datos_grupo.set_index('Nº Expediente en Centro', inplace=True)
     df = pd.concat([df, lista_datos_grupo])
 
-# Borra los duplicados y luego los ordena segun su email
+# Borra los duplicados y luego los ordena segun su Nº de Expediente
 lista_estudiantes_datos = df[~df.index.duplicated()].sort_index()
 
 # Juntan en un lista a los estudiantes y los grupos asignados y lo ponen en el archivo excel
