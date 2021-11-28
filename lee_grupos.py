@@ -59,6 +59,9 @@ def semanas_subgrupo(nombre_asignatura, subgrupo):
 
 # Lee los excel de cada asignatura y sus grupos y devuelve los estudiantes con las limitaciones y prioridades de reparto
 def lee_estudiantes_asignatura(asignatura):
+
+    global grupos_grado
+
     lista_todos_grupos_grado = []
     estudiantes_asignatura = pd.DataFrame()
     for _, grupo_grado in grupos_grado.iterrows():
@@ -102,7 +105,7 @@ def lee_subgrupos_asignados_estudiante(subgrupos_tamaños, asignatura, lista_est
     return subgrupos_ya_asignados, sesiones_subgrupos_ya_asignados
 
 # Asigna a un estudiante a un subgrupo
-def asigna_subgrupo_estudiante_semanas(subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
+def asigna_subgrupo_estudiante_semanas(asignatura, subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
     ultimo_subgrupo = list(subgrupos_ya_asignados.keys())[-1]
     sesion_subgrupo_a_asignar = subgrupo_a_asignar.split('-')[0]
 
@@ -132,179 +135,189 @@ def asigna_subgrupo_estudiante_semanas(subgrupos_ya_asignados, lista_estudiantes
                                             f'subgrupo_{asignatura.name}'] = subgrupo_a_asignar
             return True
 
-# Empieza el programa
+# Variables globales
 l = []
 lista_total = []
 lista_estudiantes_subgrupos = pd.DataFrame()
 
-exito = False
+# Asigna los grupos a los estudiantes
+def asignar_grupos():
 
-# Pruebas
-# asignaturas = asignaturas.reindex(['automatizacion', 'potencia', 'infind', 'instrumentacion', 'robotica'])
-asignaturas = asignaturas.reindex(['potencia', 'infind', 'automatizacion', 'robotica', 'instrumentacion'])
-# asignaturas = asignaturas.reindex(['robotica', 'instrumentacion', 'automatizacion', 'potencia', 'infind'])
-# asignaturas = asignaturas.reindex(['instrumentacion', 'robotica', 'infind', 'automatizacion', 'potencia'])
+    global asignaturas, l, lista_total, lista_estudiantes_subgrupos
 
-# Pruebas
-# for index in range(20):
-
-# Mientras que no se asigne correctamente los alumnos sigue buscando 
-while not exito:
-    
     # Pruebas
-    # print(index, asignaturas.index)
-    
-    # Recorre cada asignatura
-    for _, asignatura in asignaturas.iterrows():
+    # asignaturas = asignaturas.reindex(['automatizacion', 'potencia', 'infind', 'instrumentacion', 'robotica'])
+    asignaturas = asignaturas.reindex(['potencia', 'infind', 'automatizacion', 'robotica', 'instrumentacion'])
+    # asignaturas = asignaturas.reindex(['robotica', 'instrumentacion', 'automatizacion', 'potencia', 'infind'])
+    # asignaturas = asignaturas.reindex(['instrumentacion', 'robotica', 'infind', 'automatizacion', 'potencia'])
 
-        # Recoge los estudiantes de los excel de cada asignatura y añade las limitaciones por grupo y sus prioridad
-        estudiantes_asignatura = lee_estudiantes_asignatura(asignatura)
+    # Pruebas
+    # for index in range(20):
 
-        # Si no hay estudiantes en esta asignatura
-        if estudiantes_asignatura.empty:
-            logging.error('No hay estudiantes para la asignatura de ', asignatura.name)
-            break
+    exito = False
 
-        # Genera e inicializa a 0 en la lista de estudiantes de la asignatura una columna vacía con el subgrupo
-        estudiantes_asignatura[f'subgrupo_{asignatura.name}'] = '-'
+    # Mientras que no se asigne correctamente los alumnos sigue buscando 
+    while not exito:
+        
+        # Pruebas
+        # print(index, asignaturas.index)
+        
+        # Recorre cada asignatura
+        for _, asignatura in asignaturas.iterrows():
 
-        # Guarda el numero de los subgrupos por asignatura
-        num_subgrupos_sesion = asignatura['num_subgrupos']
+            # Recoge los estudiantes de los excel de cada asignatura y añade las limitaciones por grupo y sus prioridad
+            estudiantes_asignatura = lee_estudiantes_asignatura(asignatura)
 
-        # Se crea la lista con todos los horarios posibles por subgrupo Ej: MI09-A, MI09-B, MI09-C, MI09-D
-        # Los horarios estan predefinidos en la variable 'asignaturas'
-        lista_subgrupos_asignatura = list(map(lambda x: str(x[0]) + '-' + str(x[1]), product(
-            asignatura['horario_sesiones'], string.ascii_uppercase[:num_subgrupos_sesion])))
-        # Crea una cola con la lista_subgrupos_asignatura
-        ciclo_subgrupos_asignatura = deque(lista_subgrupos_asignatura)
+            # Si no hay estudiantes en esta asignatura
+            if estudiantes_asignatura.empty:
+                logging.error('No hay estudiantes para la asignatura de ', asignatura.name)
+                break
 
-        # Baraja los estudiantes de momento siempre igual
-        estudiantes_asignatura = estudiantes_asignatura.sample(
-            frac=1, random_state=SEMILLA_RND)
+            # Genera e inicializa a 0 en la lista de estudiantes de la asignatura una columna vacía con el subgrupo
+            estudiantes_asignatura[f'subgrupo_{asignatura.name}'] = '-'
 
-        # Crea una lista barajada pero ordenada de los estudiantes
-        lista_estudiantes_asignatura = estudiantes_asignatura.sort_values(
-            by=['prioridad_reparto_grupo_grado'])
+            # Guarda el numero de los subgrupos por asignatura
+            num_subgrupos_sesion = asignatura['num_subgrupos']
 
-        # Salta un Warning si hay mas alumnos que plazas en la asignatura
-        if estudiantes_asignatura.shape[0] > int(asignatura['plazas_sesion']) * len(lista_subgrupos_asignatura):
-            logging.warning('Asignatura %s tiene más alumnos (%s) que plazas (%s).',
-                            asignatura.name, estudiantes_asignatura.shape[0], asignatura['plazas_sesion'] * len(lista_subgrupos_asignatura))
+            # Se crea la lista con todos los horarios posibles por subgrupo Ej: MI09-A, MI09-B, MI09-C, MI09-D
+            # Los horarios estan predefinidos en la variable 'asignaturas'
+            lista_subgrupos_asignatura = list(map(lambda x: str(x[0]) + '-' + str(x[1]), product(
+                asignatura['horario_sesiones'], string.ascii_uppercase[:num_subgrupos_sesion])))
+            # Crea una cola con la lista_subgrupos_asignatura
+            ciclo_subgrupos_asignatura = deque(lista_subgrupos_asignatura)
 
-        # Recorre todos los estudiantes
-        for idx_estudiante, estudiante in lista_estudiantes_asignatura.iterrows():
+            # Baraja los estudiantes de momento siempre igual
+            estudiantes_asignatura = estudiantes_asignatura.sample(
+                frac=1, random_state=SEMILLA_RND)
 
-            # Guarda la informacion del logeo de todos los estudiantes
-            logging.info('\n\nEstudiante: %s , grupo: %s', idx_estudiante,
-                        estudiante['Grupo matrícula'][-5:-1])
-            
-            # Ultimo subgrupo en el ciclo
-            ultimo_subgrupo = ciclo_subgrupos_asignatura[-1]
+            # Crea una lista barajada pero ordenada de los estudiantes
+            lista_estudiantes_asignatura = estudiantes_asignatura.sort_values(
+                by=['prioridad_reparto_grupo_grado'])
 
-            # Recorre los subgrupos de cada uno de los alumnos
-            for subgrupo_a_asignar in list(ciclo_subgrupos_asignatura):
-                ciclo_subgrupos_asignatura.rotate(1)
+            # Salta un Warning si hay mas alumnos que plazas en la asignatura
+            if estudiantes_asignatura.shape[0] > int(asignatura['plazas_sesion']) * len(lista_subgrupos_asignatura):
+                logging.warning('Asignatura %s tiene más alumnos (%s) que plazas (%s).',
+                                asignatura.name, estudiantes_asignatura.shape[0], asignatura['plazas_sesion'] * len(lista_subgrupos_asignatura))
+
+            # Recorre todos los estudiantes
+            for idx_estudiante, estudiante in lista_estudiantes_asignatura.iterrows():
+
+                # Guarda la informacion del logeo de todos los estudiantes
+                logging.info('\n\nEstudiante: %s , grupo: %s', idx_estudiante,
+                            estudiante['Grupo matrícula'][-5:-1])
                 
-                logging.info('\n\nAsignatura %s Subgrupo: %s',
-                            asignatura.name, subgrupo_a_asignar)
+                # Ultimo subgrupo en el ciclo
+                ultimo_subgrupo = ciclo_subgrupos_asignatura[-1]
 
-                # Recoge el numero de estudiantes por cada asignatura de cada subgrupo. Cuenta los que hay en cada subgrupo
-                subgrupos_tamaños = lista_estudiantes_asignatura.groupby(
-                    f'subgrupo_{asignatura.name}').size()
+                # Recorre los subgrupos de cada uno de los alumnos
+                for subgrupo_a_asignar in list(ciclo_subgrupos_asignatura):
+                    ciclo_subgrupos_asignatura.rotate(1)
+                    
+                    logging.info('\n\nAsignatura %s Subgrupo: %s',
+                                asignatura.name, subgrupo_a_asignar)
 
-                # Cuenta plazas de cada subgrupo. La primera vez está vacío, por lo que se comprueba
-                if subgrupo_a_asignar not in subgrupos_tamaños or subgrupos_tamaños[subgrupo_a_asignar] < asignatura['plazas_sesion']:
-                    # Si el estudiante ya tiene un subgrupo de una asignación previa, se obtiene
-                    subgrupos_ya_asignados, sesiones_subgrupos_ya_asignados = lee_subgrupos_asignados_estudiante(
-                        subgrupos_tamaños, asignatura, lista_estudiantes_subgrupos, subgrupo_a_asignar, idx_estudiante)
-                    # Miguel MI11-A: Instru, MI11-A: Potencia, MA09-A: Info (con semanas)
+                    # Recoge el numero de estudiantes por cada asignatura de cada subgrupo. Cuenta los que hay en cada subgrupo
+                    subgrupos_tamaños = lista_estudiantes_asignatura.groupby(
+                        f'subgrupo_{asignatura.name}').size()
 
-                    # Si el subgrupo coincide (sesión+subgrupo) hay que comprobar que no coincidan las semanas
-                    # lista_subgrupos_ya_asignados = [subgrupo for subgrupo in subgrupos_ya_asignados]
-                    sesion_subgrupo_a_asignar = subgrupo_a_asignar.split('-')[0]
+                    # Cuenta plazas de cada subgrupo. La primera vez está vacío, por lo que se comprueba
+                    if subgrupo_a_asignar not in subgrupos_tamaños or subgrupos_tamaños[subgrupo_a_asignar] < asignatura['plazas_sesion']:
+                        # Si el estudiante ya tiene un subgrupo de una asignación previa, se obtiene
+                        subgrupos_ya_asignados, sesiones_subgrupos_ya_asignados = lee_subgrupos_asignados_estudiante(
+                            subgrupos_tamaños, asignatura, lista_estudiantes_subgrupos, subgrupo_a_asignar, idx_estudiante)
+                        # Miguel MI11-A: Instru, MI11-A: Potencia, MA09-A: Info (con semanas)
 
-                    # Si esta en el mismo dia y hora pues entra para saber si coincide las semanas
-                    if sesion_subgrupo_a_asignar in sesiones_subgrupos_ya_asignados:
-                        # Se asigna el subgrupo teniendo en cuenta las semanas mediante asigna_subgrupo_estudiante_semanas() (BREAK, deja de buscar más subgrupos), si no sigue buscando
-                        if asigna_subgrupo_estudiante_semanas(
-                                subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
-                            break
-                    else:
-                        # estudiante sin restricciones: limitaciones_sesion está vacía
-                        # estudiante con restricciones: se mira si no está vacía la lista de limitaciones_sesion y cual es su grupo horario. Si es compatible lo coge
-                        if not estudiante['limitaciones_sesion_grupo_grado'] or (sesion_subgrupo_a_asignar in estudiante['limitaciones_sesion_grupo_grado'][f'{asignatura.name}']):
-                            logging.info('%s asignado a %s',
-                                        asignatura.name, subgrupo_a_asignar)
-                            lista_estudiantes_asignatura.at[idx_estudiante,
-                                                            f'subgrupo_{asignatura.name}'] = subgrupo_a_asignar
-                            break
-                        # si el subgrupo no es compatible, sale y busca en otro grupo
+                        # Si el subgrupo coincide (sesión+subgrupo) hay que comprobar que no coincidan las semanas
+                        # lista_subgrupos_ya_asignados = [subgrupo for subgrupo in subgrupos_ya_asignados]
+                        sesion_subgrupo_a_asignar = subgrupo_a_asignar.split('-')[0]
+
+                        # Si esta en el mismo dia y hora pues entra para saber si coincide las semanas
+                        if sesion_subgrupo_a_asignar in sesiones_subgrupos_ya_asignados:
+                            # Se asigna el subgrupo teniendo en cuenta las semanas mediante asigna_subgrupo_estudiante_semanas() (BREAK, deja de buscar más subgrupos), si no sigue buscando
+                            if asigna_subgrupo_estudiante_semanas(
+                                    asignatura, subgrupos_ya_asignados, lista_estudiantes_asignatura, subgrupo_a_asignar, idx_estudiante):
+                                break
                         else:
-                            logging.error(
-                                '%s no consigue asignar el subgrupo %s. Hay restriccion %s', asignatura.name, subgrupo_a_asignar, estudiante['limitaciones_sesion_grupo_grado'][f'{asignatura.name}'])
-                            continue
-                else:
-                    logging.info('No hay plazas en el grupo %s',
-                                subgrupo_a_asignar)
+                            # estudiante sin restricciones: limitaciones_sesion está vacía
+                            # estudiante con restricciones: se mira si no está vacía la lista de limitaciones_sesion y cual es su grupo horario. Si es compatible lo coge
+                            if not estudiante['limitaciones_sesion_grupo_grado'] or (sesion_subgrupo_a_asignar in estudiante['limitaciones_sesion_grupo_grado'][f'{asignatura.name}']):
+                                logging.info('%s asignado a %s',
+                                            asignatura.name, subgrupo_a_asignar)
+                                lista_estudiantes_asignatura.at[idx_estudiante,
+                                                                f'subgrupo_{asignatura.name}'] = subgrupo_a_asignar
+                                break
+                            # si el subgrupo no es compatible, sale y busca en otro grupo
+                            else:
+                                logging.error(
+                                    '%s no consigue asignar el subgrupo %s. Hay restriccion %s', asignatura.name, subgrupo_a_asignar, estudiante['limitaciones_sesion_grupo_grado'][f'{asignatura.name}'])
+                                continue
+                    else:
+                        logging.info('No hay plazas en el grupo %s',
+                                    subgrupo_a_asignar)
 
-                # comprueba si no consigue asignar subgrupo
-                if subgrupo_a_asignar == ultimo_subgrupo[-1]:
-                    logging.error(
-                        'Asignatura %s No hay subgrupo disponible para %s', asignatura.name, idx_estudiante)
+                    # comprueba si no consigue asignar subgrupo
+                    if subgrupo_a_asignar == ultimo_subgrupo[-1]:
+                        logging.error(
+                            'Asignatura %s No hay subgrupo disponible para %s', asignatura.name, idx_estudiante)
 
-        logging.error('\n\nLista estudiantes sin grupo de %s', asignatura.name)
-        logging.error(lista_estudiantes_asignatura[lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'] == '-'])
+            logging.error('\n\nLista estudiantes sin grupo de %s', asignatura.name)
+            logging.error(lista_estudiantes_asignatura[lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'] == '-'])
 
-        l.append(lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'])
-        lista_estudiantes_subgrupos = pd.concat(l, axis=1)
-        # lista_total.append(lista_estudiantes_asignatura)
+            l.append(lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'])
+            lista_estudiantes_subgrupos = pd.concat(l, axis=1)
+            # lista_total.append(lista_estudiantes_asignatura)
 
-        # Numero de plazas por cada asignatura
-        num_plazas = int(asignatura['plazas_sesion']) * len(asignatura['horario_sesiones']) * asignatura['num_subgrupos']
-        # Se hace la diferencia entre el número de alumnos y el número de plazas por asignatura
-        # Si se queda negativo es porque hay plazas demás
-        # Si se queda positivo es porque faltan plazas
-        plazas_sin_asignar = estudiantes_asignatura.shape[0] - num_plazas
-        # Lista de alumnos que no se les han asigando la asignatura (por falta de número de plazas o error del código)
-        lista_alumnos_sin_asignar = lista_estudiantes_subgrupos.loc[lista_estudiantes_subgrupos[f'subgrupo_{asignatura.name}'] == '-']
+            # Numero de plazas por cada asignatura
+            num_plazas = int(asignatura['plazas_sesion']) * len(asignatura['horario_sesiones']) * asignatura['num_subgrupos']
+            # Se hace la diferencia entre el número de alumnos y el número de plazas por asignatura
+            # Si se queda negativo es porque hay plazas demás
+            # Si se queda positivo es porque faltan plazas
+            plazas_sin_asignar = estudiantes_asignatura.shape[0] - num_plazas
+            # Lista de alumnos que no se les han asigando la asignatura (por falta de número de plazas o error del código)
+            lista_alumnos_sin_asignar = lista_estudiantes_subgrupos.loc[lista_estudiantes_subgrupos[f'subgrupo_{asignatura.name}'] == '-']
 
-        # Comprueba que los alumnos no asignados son por falta de plazas
-        if len(lista_alumnos_sin_asignar) <= (plazas_sin_asignar if plazas_sin_asignar > 0 else 0):
-            exito = True
-        # Árbol de fuga: Si se recorre una asignatura y no se asigna de manera correcta se barajan las asignaturas
-        # Se optimiza el programa porque de esta forma no es necesario recorrer todas las asignaturas si no se realiza una asignación eficiente
-        else:
-            # Reinicia las variables globales
-            asignaturas = asignaturas.sample(frac=1)
-            exito = False
-            l = []
-            lista_total = []
-            lista_estudiantes_subgrupos = pd.DataFrame()
+            # Comprueba que los alumnos no asignados son por falta de plazas
+            if len(lista_alumnos_sin_asignar) <= (plazas_sin_asignar if plazas_sin_asignar > 0 else 0):
+                exito = True
+            # Árbol de fuga: Si se recorre una asignatura y no se asigna de manera correcta se barajan las asignaturas
+            # Se optimiza el programa porque de esta forma no es necesario recorrer todas las asignaturas si no se realiza una asignación eficiente
+            else:
+                # Reinicia las variables globales
+                asignaturas = asignaturas.sample(frac=1)
+                exito = False
+                l = []
+                lista_total = []
+                lista_estudiantes_subgrupos = pd.DataFrame()
 
-            logging.error(
-                'En la asignatura %s no se ha asigando a todos los estudiantes', asignatura.name)
-            break
+                logging.error(
+                    'En la asignatura %s no se ha asigando a todos los estudiantes', asignatura.name)
+                break
 
-    # Pruebas
-    # exito = False
-    # l = []
-    # lista_total = []
-    # lista_estudiantes_subgrupos = pd.DataFrame()
-    # asignaturas = asignaturas.sample(frac=1)
+        # Pruebas
+        # exito = False
+        # l = []
+        # lista_total = []
+        # lista_estudiantes_subgrupos = pd.DataFrame()
+        # asignaturas = asignaturas.sample(frac=1)
 
-# %% Combina subgrupos con datos de estudiantes
-archivos = PATH_LISTAS.glob('*.xlsx')
+# Guarda la lista en el excel
+def guardar_lista_grupos():
 
-df = pd.DataFrame()
-# Une todos los estudiantes de los archivos excel
-for archivo in archivos:
-    lista_datos_grupo = pd.read_excel(archivo, dtype={'Nº Expediente en Centro':str}).drop(columns=['Cód. Asignatura', 'Nombre Asignatura', 'Nº Orden'])[:-1]
-    lista_datos_grupo.set_index('Nº Expediente en Centro', inplace=True)
-    df = pd.concat([df, lista_datos_grupo])
+    global lista_estudiantes_subgrupos
 
-# Borra los duplicados y luego los ordena segun su Nº de Expediente
-lista_estudiantes_datos = df[~df.index.duplicated()].sort_index()
+    # %% Combina subgrupos con datos de estudiantes
+    archivos = PATH_LISTAS.glob('*.xlsx')
 
-# Juntan en un lista a los estudiantes y los grupos asignados y lo ponen en el archivo excel
-lista_junta = pd.merge(lista_estudiantes_datos, lista_estudiantes_subgrupos, left_index=True, right_index=True)
-lista_junta.to_excel('lista_subgrupos.xlsx')
+    df = pd.DataFrame()
+    # Une todos los estudiantes de los archivos excel
+    for archivo in archivos:
+        lista_datos_grupo = pd.read_excel(archivo, dtype={'Nº Expediente en Centro':str}).drop(columns=['Cód. Asignatura', 'Nombre Asignatura', 'Nº Orden'])[:-1]
+        lista_datos_grupo.set_index('Nº Expediente en Centro', inplace=True)
+        df = pd.concat([df, lista_datos_grupo])
+
+    # Borra los duplicados y luego los ordena segun su Nº de Expediente
+    lista_estudiantes_datos = df[~df.index.duplicated()].sort_index()
+
+    # Juntan en un lista a los estudiantes y los grupos asignados y lo ponen en el archivo excel
+    lista_junta = pd.merge(lista_estudiantes_datos, lista_estudiantes_subgrupos, left_index=True, right_index=True)
+    lista_junta.to_excel('lista_subgrupos.xlsx')
