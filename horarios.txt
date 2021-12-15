@@ -1,0 +1,6 @@
+Algebra Lineal-['LU09', 'LU11', 'LU15', 'LU17', 'MA09', 'MA11', 'MA15', 'MI09', 'JU09', 'JU11', 'JU15', 'JU17', 'VI09']
+Estadistica-LU09
+Electronica Analogica-MI11
+Informatica Industrial-['LU11', 'MI09', 'MI15']
+Teoria de Circuitos-['MA11', 'MA09', 'MA17']
+Fisica I-MI11
