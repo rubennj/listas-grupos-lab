@@ -1,6 +1,9 @@
-Algebra Lineal-['LU09', 'LU11', 'LU15', 'LU17', 'MA09', 'MA11', 'MA15', 'MI09', 'JU09', 'JU11', 'JU15', 'JU17', 'VI09']
-Estadistica-LU09
-Electronica Analogica-MI11
-Informatica Industrial-['LU11', 'MI09', 'MI15']
-Teoria de Circuitos-['MA11', 'MA09', 'MA17']
-Fisica I-MI11
+Electronica de Potencia-['A302/LU15', 'A302/LU17', 'A302/MA15', 'A309/MI09', 'EE309/MI15']
+SII-['A408/MA09', 'A408/MA11', 'EE403/MI11', 'EE403/JU09']
+Electronica Analogica-['A302/MA17', 'EE309/MA09', 'A309/MI09', 'A309/MI11']
+Control-['EE403/LU11', 'A404/MI17', 'A408/MI09', 'EE403/MI11']
+SEI-['A408/LU11']
+Instrumentacion electronica-['A302/MA17', 'A309/MA09', 'A309/MA11', 'EE309/MA09', 'A302/MI17', 'A309/MI09', 'EE309/MI09', 'EE309/MI11', 'A302/JU15', 'A302/JU17', 'A309/JU09', 'A309/JU11', 'A302/VI15', 'A309/VI09']
+Robotica-['A302/MA15', 'A309/MA09', 'A302/MI15', 'A309/MI09', 'EE403/MI09', 'EE403/MI11']
+Informatica Industrial-['A302/LU15', 'A302/LU17', 'A309/MA09', 'A309/MA11', 'EE309/MA09', 'A302/JU15', 'A302/JU17', 'A309/JU09', 'A309/JU11', 'A302/VI15']
+Automatizacion-['A302/LU15', 'A302/LU17', 'EE309/MA09', 'A302/JU15', 'A309/JU09', 'A309/JU11']

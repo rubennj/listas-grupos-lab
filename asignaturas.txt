@@ -1,1 +1,8 @@
--0-0--0-0
+informatica industrial-18-6-['A309/MA09', 'EE309/MA09', 'A309/MA11', 'A302/JU15', 'A302/JU17', 'A302/VI15']-2-3
+electronica de potencia-16-3-['A302/LU15', 'A302/MA15', 'A309/MI09', 'EE309/MI15']-3-6
+control-14-2-['EE403/MI17', 'A404/MI17', 'A408/MI09']-4-2
+electronica analogica-14-3-['A302/MA17', 'EE309/MA17', 'A309/MI09', 'A309/MI11']-4-1
+instrumentacion electronica-18-3-['A302/MA17', 'A302/MI17', 'A309/VI09']-3-6
+automatizacion-20-5-['A302/LU15', 'A302/LU17', 'EE309/MA09', 'A302/JU15', 'A309/JU09', 'A309/JU11']-2-3
+sii-1-1-['A408/MA09']-1-1
+robotica-18-3-['A309/MI09', 'A302/MA15', 'A302/MI15']-3-6

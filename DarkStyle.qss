@@ -31,7 +31,6 @@ QWidget
 	gridline-color: #000;
 }
 
-
 /*-----QLabel-----*/
 /* Texto */
 QLabel
@@ -116,9 +115,8 @@ QMenu::item:disabled
 
 QMenu::item:selected
 {
-	background-color: rgba(183, 134, 32, 20%);
-	border: 1px solid #b78620;
-	color: #fff;
+	background-color: rgba(32, 77, 183, 20%);
+	border: 1px solid #2887c7;
 
 }
 
@@ -187,7 +185,7 @@ QPushButton
 {
 	background-color: qlineargradient(spread:repeat, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(84, 84, 84, 255),stop:1 rgba(59, 59, 59, 255));
 	color: #ffffff;
-	min-width: 80px;
+	/*min-width: 80px;*/
 	border-style: solid;
 	border-width: 1px;
 	border-radius: 3px;
@@ -281,8 +279,8 @@ QTabBar::tab
 	padding-left: 15px;
 	padding-right: 15px;
 	/* Bordes cambios AMC */
-	border-top-left-radius:4px;
-  	border-top-right-radius:4px;
+	border-top-left-radius:3px;
+  	border-top-right-radius:3px;
 
 }
 
@@ -305,7 +303,7 @@ QTabBar::tab:last
 
 QTabBar::tab:first:!selected
 {
-	background-color: #0c0c0d;
+	background-color: #131314;
 	margin-left: 0px;
 
 }
@@ -315,9 +313,10 @@ QTabBar::tab:!selected
 {
 	color: #b1b1b1;
 	border-bottom-style: solid;
-	background-color: #0c0c0d;
+	background-color: #131314
 
 }
+
 
 
 QTabBar::tab:selected
@@ -1160,6 +1159,7 @@ QMessageBox
 {
     border: 1px solid #2887c7;
 }
+
 
 /*-----QFrame-----*/
 /* Líneas horizontales y verticales */
