@@ -46,7 +46,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>793</width>
+      <width>790</width>
       <height>481</height>
      </rect>
     </property>
@@ -59,128 +59,11 @@
     <property name="currentIndex">
      <number>0</number>
     </property>
-    <widget class="QWidget" name="tab_1">
-     <attribute name="title">
-      <string>Asignación</string>
-     </attribute>
-     <widget class="QLabel" name="Creditos">
-      <property name="geometry">
-       <rect>
-        <x>640</x>
-        <y>370</y>
-        <width>131</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>TFG - Andrea Magro Canas</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="BtnSecundario">
-      <property name="geometry">
-       <rect>
-        <x>510</x>
-        <y>110</y>
-        <width>171</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Pulsa</string>
-      </property>
-      <property name="autoDefault">
-       <bool>true</bool>
-      </property>
-      <property name="default">
-       <bool>false</bool>
-      </property>
-      <property name="flat">
-       <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="BtnPrincipal">
-      <property name="geometry">
-       <rect>
-        <x>120</x>
-        <y>110</y>
-        <width>171</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Pulsa</string>
-      </property>
-      <property name="autoDefault">
-       <bool>true</bool>
-      </property>
-      <property name="default">
-       <bool>false</bool>
-      </property>
-      <property name="flat">
-       <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="Titulo_1">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>12</y>
-        <width>761</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>8</pointsize>
-       </font>
-      </property>
-      <property name="lineWidth">
-       <number>1</number>
-      </property>
-      <property name="text">
-       <string>ASIGNACIÓN DE ESTUDIANTES</string>
-      </property>
-      <property name="textFormat">
-       <enum>Qt::AutoText</enum>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="Line" name="Linea_1">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>50</y>
-        <width>721</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>50</weight>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <property name="lineWidth">
-       <number>1</number>
-      </property>
-      <property name="midLineWidth">
-       <number>0</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="tabDisponibilidad">
      <attribute name="title">
       <string>Disponibilidad</string>
      </attribute>
-     <widget class="QTreeWidget" name="AsignaturasTree">
+     <widget class="QTreeWidget" name="ArbolAsignaturas">
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -202,82 +85,7 @@
       </column>
       <item>
        <property name="text">
-        <string>Primer Cuatrimestre</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>Algebra Lineal</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Calculo Infinitesimal</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Fisica I</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Quimica</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Segundo Cuatrimestre</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>Ampliacion de Matematicas</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Estadistica</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Fisica II</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Metodos Numericos</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Tercer Cuatrimestre</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>Ciencia de materiales</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Resistencia de los materiales</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Teoria de Circuitos</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Termodinamica</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Cuarto Cuatrimestre</string>
+        <string>Cuatrimestre Par</string>
        </property>
        <item>
         <property name="text">
@@ -289,56 +97,6 @@
          <string>Electronica</string>
         </property>
        </item>
-       <item>
-        <property name="text">
-         <string>Maquinas electricas</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Mecanica de fluidos</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Tecnologias de fabricacion</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Transmision de calor</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Quinto Cuatrimestre</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>Electronica Analogica</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Electronica Digital</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Regulacion Automatica</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Teoria de maquinas y mecanismos</string>
-        </property>
-       </item>
-      </item>
-      <item>
-       <property name="text">
-        <string>Sexto Cuatrimestre</string>
-       </property>
        <item>
         <property name="text">
          <string>Automatizacion</string>
@@ -367,8 +125,23 @@
       </item>
       <item>
        <property name="text">
-        <string>Septimo Cuatrimestre</string>
+        <string>Cuatrimestre Impar</string>
        </property>
+       <item>
+        <property name="text">
+         <string>Electronica Analogica</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Electronica Digital</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Regulacion Automatica</string>
+        </property>
+       </item>
        <item>
         <property name="text">
          <string>Control</string>
@@ -391,7 +164,7 @@
        </item>
       </item>
      </widget>
-     <widget class="QLabel" name="Titulo_2">
+     <widget class="QLabel" name="TituloDisponibilidad">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -415,7 +188,7 @@
      <widget class="QComboBox" name="ComboBoxDias">
       <property name="geometry">
        <rect>
-        <x>410</x>
+        <x>440</x>
         <y>180</y>
         <width>81</width>
         <height>21</height>
@@ -453,7 +226,7 @@
      <widget class="QComboBox" name="ComboBoxHoras">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>550</x>
         <y>180</y>
         <width>81</width>
         <height>21</height>
@@ -463,33 +236,13 @@
        <number>-1</number>
       </property>
       <property name="maxVisibleItems">
-       <number>4</number>
+       <number>8</number>
       </property>
-      <item>
-       <property name="text">
-        <string>09:30</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>11:30</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>15:30</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>17:30</string>
-       </property>
-      </item>
      </widget>
      <widget class="QLabel" name="lblHoras">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>550</x>
         <y>140</y>
         <width>81</width>
         <height>31</height>
@@ -505,7 +258,7 @@
      <widget class="QLabel" name="lblDias">
       <property name="geometry">
        <rect>
-        <x>410</x>
+        <x>440</x>
         <y>140</y>
         <width>81</width>
         <height>31</height>
@@ -518,7 +271,7 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="Line" name="Linea_2">
+     <widget class="Line" name="LineaDisponibilidad">
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -551,7 +304,7 @@
        <rect>
         <x>670</x>
         <y>180</y>
-        <width>75</width>
+        <width>81</width>
         <height>23</height>
        </rect>
       </property>
@@ -562,7 +315,7 @@
      <widget class="QLabel" name="lblAsignada">
       <property name="geometry">
        <rect>
-        <x>410</x>
+        <x>330</x>
         <y>100</y>
         <width>111</width>
         <height>16</height>
@@ -575,9 +328,9 @@
      <widget class="QLabel" name="lblAsignaturaAsignada">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>440</x>
         <y>100</y>
-        <width>231</width>
+        <width>301</width>
         <height>16</height>
        </rect>
       </property>
@@ -585,15 +338,106 @@
        <string>...</string>
       </property>
      </widget>
+     <widget class="QComboBox" name="ComboBoxGrupos">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>180</y>
+        <width>81</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="currentIndex">
+       <number>-1</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblGrupos">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>140</y>
+        <width>81</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>GRUPOS</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="BtnBorrarHorario">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>230</y>
+        <width>81</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Borrar</string>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="TablaHorarios">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>230</y>
+        <width>191</width>
+        <height>191</height>
+       </rect>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+      <property name="textElideMode">
+       <enum>Qt::ElideNone</enum>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <attribute name="horizontalHeaderStretchLastSection">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Horarios</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </column>
+     </widget>
+     <widget class="QPushButton" name="BtnAyudaDisponibilidad">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>-1</y>
+        <width>31</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>?</string>
+      </property>
+     </widget>
     </widget>
-    <widget class="QWidget" name="tab_3">
+    <widget class="QWidget" name="tabAgregarLabs">
      <attribute name="title">
       <string>Agregar Labs</string>
      </attribute>
      <widget class="QSpinBox" name="PlazasText">
       <property name="geometry">
        <rect>
-        <x>200</x>
+        <x>215</x>
         <y>120</y>
         <width>51</width>
         <height>25</height>
@@ -606,7 +450,7 @@
      <widget class="QSpinBox" name="NumSubgruposText">
       <property name="geometry">
        <rect>
-        <x>420</x>
+        <x>435</x>
         <y>120</y>
         <width>51</width>
         <height>25</height>
@@ -616,7 +460,7 @@
      <widget class="QSpinBox" name="NumSesionesText">
       <property name="geometry">
        <rect>
-        <x>320</x>
+        <x>330</x>
         <y>120</y>
         <width>51</width>
         <height>25</height>
@@ -626,7 +470,7 @@
      <widget class="QSpinBox" name="SemanaInicialText">
       <property name="geometry">
        <rect>
-        <x>530</x>
+        <x>545</x>
         <y>120</y>
         <width>51</width>
         <height>25</height>
@@ -652,7 +496,7 @@
      <widget class="QLabel" name="lblNumPlazas">
       <property name="geometry">
        <rect>
-        <x>180</x>
+        <x>190</x>
         <y>80</y>
         <width>101</width>
         <height>31</height>
@@ -668,7 +512,7 @@
      <widget class="QLabel" name="lblNumSesiones">
       <property name="geometry">
        <rect>
-        <x>310</x>
+        <x>320</x>
         <y>80</y>
         <width>71</width>
         <height>31</height>
@@ -684,7 +528,7 @@
      <widget class="QLabel" name="lblNumSubgrupos">
       <property name="geometry">
        <rect>
-        <x>410</x>
+        <x>420</x>
         <y>80</y>
         <width>81</width>
         <height>31</height>
@@ -700,7 +544,7 @@
      <widget class="QLabel" name="lblSemanaInicial">
       <property name="geometry">
        <rect>
-        <x>510</x>
+        <x>530</x>
         <y>80</y>
         <width>91</width>
         <height>31</height>
@@ -713,7 +557,7 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="Titulo_3">
+     <widget class="QLabel" name="TituloAgregarLabs">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -737,9 +581,9 @@
      <widget class="QPushButton" name="BtnAceptar">
       <property name="geometry">
        <rect>
-        <x>650</x>
+        <x>660</x>
         <y>120</y>
-        <width>71</width>
+        <width>91</width>
         <height>25</height>
        </rect>
       </property>
@@ -762,11 +606,11 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="BtnVaciarTxt">
+     <widget class="QPushButton" name="BtnBorrarLabs">
       <property name="geometry">
        <rect>
-        <x>460</x>
-        <y>280</y>
+        <x>640</x>
+        <y>290</y>
         <width>121</width>
         <height>31</height>
        </rect>
@@ -806,9 +650,9 @@
      <widget class="QLabel" name="lblHorario">
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>30</x>
         <y>180</y>
-        <width>341</width>
+        <width>191</width>
         <height>31</height>
        </rect>
       </property>
@@ -819,7 +663,7 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="Line" name="Linea_3">
+     <widget class="Line" name="LineaAgregarLabs">
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -847,10 +691,10 @@
        <enum>Qt::Horizontal</enum>
       </property>
      </widget>
-     <widget class="QScrollArea" name="scrollArea">
+     <widget class="QScrollArea" name="AreaHorarios">
       <property name="geometry">
        <rect>
-        <x>140</x>
+        <x>30</x>
         <y>220</y>
         <width>191</width>
         <height>201</height>
@@ -870,6 +714,610 @@
        </property>
       </widget>
      </widget>
+     <widget class="QPushButton" name="BtnAyudaAgregarLabs">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>-1</y>
+        <width>31</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>?</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="ComboBoxAsignaturaComparten1">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>220</y>
+        <width>101</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="currentText">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="ComboBoxAsignaturaComparten2">
+      <property name="geometry">
+       <rect>
+        <x>450</x>
+        <y>220</y>
+        <width>101</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="currentText">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblAsignaturaComparten">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>180</y>
+        <width>241</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ASIGNATURAS QUE COMPARTEN AULA</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="TablaCompartenAula">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>260</y>
+        <width>241</width>
+        <height>161</height>
+       </rect>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+      <property name="textElideMode">
+       <enum>Qt::ElideNone</enum>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <attribute name="horizontalHeaderStretchLastSection">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Comparten Aula</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </column>
+     </widget>
+     <widget class="QPushButton" name="BtnBorrarAulas">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>350</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="inputMethodHints">
+       <set>Qt::ImhNone</set>
+      </property>
+      <property name="text">
+       <string>Borrar Aulas</string>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+      <property name="autoDefault">
+       <bool>true</bool>
+      </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tabAsignacion">
+     <attribute name="title">
+      <string>Asignación</string>
+     </attribute>
+     <widget class="QPushButton" name="BtnGuardarExcel">
+      <property name="geometry">
+       <rect>
+        <x>510</x>
+        <y>110</y>
+        <width>171</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Guardar en Excel</string>
+      </property>
+      <property name="autoDefault">
+       <bool>true</bool>
+      </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="BtnAsignacion">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>110</y>
+        <width>171</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Asignación</string>
+      </property>
+      <property name="autoDefault">
+       <bool>true</bool>
+      </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="TituloAsignacion">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>12</y>
+        <width>761</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="text">
+       <string>ASIGNACIÓN DE ESTUDIANTES</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::AutoText</enum>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="Line" name="LineaAsignacion">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>50</y>
+        <width>721</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="BtnAyudaAsignacion">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>-1</y>
+        <width>31</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>?</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="BtnCrearPDF">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>230</y>
+        <width>171</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Crear PDF</string>
+      </property>
+      <property name="autoDefault">
+       <bool>true</bool>
+      </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="radioBtnMatricula">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>255</y>
+        <width>71</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Matricula</string>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="radioBtnNombre">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>255</y>
+        <width>111</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Apellidos, Nombre</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="TituloAsignacion_2">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>215</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="text">
+       <string>SELECCIÓN DE FORMATO</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::AutoText</enum>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tabCalendarioAlumnos">
+     <attribute name="title">
+      <string>Calendario Alumnos</string>
+     </attribute>
+     <widget class="Line" name="LineaCalendarioAlumnos">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>50</y>
+        <width>721</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="TituloCalendarioAlumnos">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>12</y>
+        <width>781</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>CALENDARIO ALUMNOS</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="TablaHorario">
+      <property name="geometry">
+       <rect>
+        <x>27</x>
+        <y>170</y>
+        <width>731</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="autoScroll">
+       <bool>true</bool>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <attribute name="horizontalHeaderCascadingSectionResizes">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="horizontalHeaderStretchLastSection">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderStretchLastSection">
+       <bool>false</bool>
+      </attribute>
+      <row>
+       <property name="text">
+        <string>9:30</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>11:30</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>15:30</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>17:30</string>
+       </property>
+      </row>
+      <column>
+       <property name="text">
+        <string>Lunes</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Martes</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Miércoles</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Jueves</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Viernes</string>
+       </property>
+      </column>
+      <item row="0" column="0">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </item>
+      <item row="1" column="1">
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="lblNumMatricula">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>80</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Nº MATRICULA</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="BtnExportarPDF">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>120</y>
+        <width>91</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Exportar a PDF</string>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="TxtNumMatricula">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>119</y>
+        <width>191</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="acceptDrops">
+       <bool>true</bool>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <property name="lineWidth">
+       <number>2</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustIgnored</enum>
+      </property>
+      <property name="tabChangesFocus">
+       <bool>true</bool>
+      </property>
+      <property name="lineWrapMode">
+       <enum>QPlainTextEdit::NoWrap</enum>
+      </property>
+      <property name="readOnly">
+       <bool>false</bool>
+      </property>
+      <property name="plainText">
+       <string/>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextEditorInteraction</set>
+      </property>
+      <property name="centerOnScroll">
+       <bool>true</bool>
+      </property>
+      <property name="placeholderText">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="BtnGuardaAsignaturas">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>120</y>
+        <width>81</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Aceptar</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblHorarios">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>360</y>
+        <width>721</width>
+        <height>91</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="BtnAyudaCalendarioAlumnos">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>-1</y>
+        <width>31</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>?</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lblNumMatricula_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>330</y>
+        <width>121</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>DÍAS DE PRÁCTICAS</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -877,9 +1325,9 @@
  </widget>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>BtnPrincipal</tabstop>
-  <tabstop>BtnSecundario</tabstop>
-  <tabstop>AsignaturasTree</tabstop>
+  <tabstop>BtnAsignacion</tabstop>
+  <tabstop>BtnGuardarExcel</tabstop>
+  <tabstop>ArbolAsignaturas</tabstop>
   <tabstop>ComboBoxDias</tabstop>
   <tabstop>ComboBoxHoras</tabstop>
   <tabstop>BtnGuardaHorario</tabstop>
@@ -889,7 +1337,7 @@
   <tabstop>NumSubgruposText</tabstop>
   <tabstop>SemanaInicialText</tabstop>
   <tabstop>BtnAceptar</tabstop>
-  <tabstop>BtnVaciarTxt</tabstop>
+  <tabstop>BtnBorrarLabs</tabstop>
  </tabstops>
  <resources/>
  <connections/>
