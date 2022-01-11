@@ -72,8 +72,8 @@ class GUI(QMainWindow):
                         'PESTAÑA 2: \nSe agregan los laboratorios introduciendo la asignatura de la que se va a cursar la práctica y su información.\n'+
                         'PESTANA 3: \nSe asignan los estudiantes. Se genera el Excel con las listas de los alumnos y sus laboratorios. También se puede crear un PDF similar a las listas que se publican cada año en la ETSIDI\n'+
                         'PESTAÑA 4: \nSe crea el calendario de prácticas de un alumno a través de su Nºmatrícula. Incluye el horario y las semanas que tiene que asistir a los laboratorios.\n'+
-                        'EXCEL: \n- Localización: listas_apolo \n- Extensión: .xlsx \n- Formato:\n  1. Se deben respetar los nombres de las siguientes columnas: "Grupo de matrícula", "Apellidos", "Nombre" y "Nº Expediente en Centro".c' +
-                        '  2. En estos campos no pueden haber celdas vacías \n  3. La tabla con los estudiantes debe estar bien delimitada, no deben existir bordes de más.listas de los laboratorios\n'+
+                        'EXCEL: \n- Localización: listas_apolo \n- Extensión: .xlsx \n- Formato:\n  1. Se deben respetar los nombres de las siguientes columnas: "Grupo de matrícula", "Apellidos", "Nombre" y "Nº Expediente en Centro"\n' +
+                        '  2. En estos campos no puede haber celdas vacías \n  3. La tabla con los estudiantes debe estar bien delimitada, no deben existir bordes de más.listas de los laboratorios\n'+
                         '  4. El único Excel que no se coloca en listas_apolo es Semanas.xlsx que está en la carpeta general\n'+
                         '  Por tanto, los Excel que se tienen que introducir como entradas son los de las asignaturas (listas_apolo) y Semanas.xlsx')
     # Carga los datos
@@ -401,6 +401,7 @@ class GUI(QMainWindow):
         elif nombreTab == 'Calendario Alumnos':
             self.TxtNumMatricula.setPlainText('')
             self.TablaHorario.clearContents()
+            self.lblHorarios.setText('')
     
     # Carga los horarios de las asignaturas en el comboBox
     def fn_cargar_asignaturas(self):
