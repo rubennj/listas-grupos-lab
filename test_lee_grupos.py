@@ -2,11 +2,13 @@
 """
 @author: Andrea Magro Canas
 
-Descripción del código: Lee lista_subgrupos.xlsx y mira los alumnos que tienen "-" en los subgrupos, es decir,
-los estudiantes que no están asignados. Después se imprime si la asignatura está bien o mal distribuida en función
-del número de plazas por asignatura. 
-NOTA: Se ha tenido en cuenta que en ciertas asignaturas el número de estudiantes es mayor que el número de plazas.
-Que estos estudiantes no se asignen no significa que la distribución esté mal siempre y cuando se completen todas las plazas.
+Descripción del código: Se tienen 6 opciones.
+La primera se utiliza para mostrar el tamaño de los subgrupos.
+La segunda para mostrar los estudiantes no asignados.
+La tercera ejecuta el programa principal lee_grupos
+La cuarta saca los subgrupos de un estudiante metiendo su número de matrícula
+La quinta genera un PDF con las listas de laboratorio
+La sexta finaliza el programa
 
 """
 
@@ -47,7 +49,7 @@ while not fin:
                 count += len(lista_subgrupos[lista_subgrupos[col] == '-'])
         print('\nHay', count, 'alumnos sin asignar.')
         print()
-    # Ejecuta el programa principal ed lee_grupos
+    # Ejecuta el programa principal: lee_grupos
     elif opcion == '3':
         # Si imprime un codigo de error 0 va bien 
         cod_error, error = lee_grupos.asignar_grupos()
