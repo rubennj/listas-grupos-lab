@@ -3,7 +3,7 @@
 @author: Andrea Magro Canas
 
 Descripción del código: Algoritmo de asignación de estudiantes en grupos de laboratorio. Se recogen los
-estudiantes distribuidos y sus respectivos grupos de laboratorio en un Excel. También, se genera un PDF 
+estudiantes distribuidos y sus respectivos grupos de laboratorio en un Excel. También, se genera un HTML 
 con las listas de las prácticas: asignatura, grupo, horario, subgrupo, los estudiantes que lo componen y fecha.
 
 """
@@ -15,7 +15,9 @@ import pandas as pd
 from pathlib import Path
 import json
 import unidecode
-import os
+import configparser
+import math
+import datetime
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -26,11 +28,16 @@ logging.basicConfig(level='INFO', handlers=[
     ] 
 )
 
+config = configparser.ConfigParser()
+config.read('configuracion.ini', encoding='utf-8')
+
 # Pruebas
 SEMILLA_RND = 123
 # Path de los archivos
-PATH_LISTAS = Path('listas_apolo')
-PATH_PDF = Path('pdf')
+PATH_LISTAS = Path(config.get('RUTAS', 'LISTAS'))
+PATH_EXCEL = Path(config.get('RUTAS', 'EXCEL'))
+PATH_HTML = Path(config.get('RUTAS', 'HTML'))
+PATH_EXCELS = Path(config.get('RUTAS', 'EXCELS'))
 
 # Variables globales
 l = list()
@@ -40,9 +47,9 @@ lista_estudiantes_subgrupos = pd.DataFrame()
 cod_error = 0
 
 # Crea a mano una tabla con todos los subgrupos
-grupos_grado = pd.DataFrame(index=['DM306', 'Q308', 'D307', 'A207', 'E208', 'A309', 'M306', 'A408', 'A204', 'E205', 'A302', 'M301', 'A404', 'EE208', 'EE309', 'EE403', 'EE507'],
+grupos_grado = pd.DataFrame(index=['DM306', 'Q308', 'D307', 'M301', 'A207', 'E208', 'A309', 'M306', 'A408', 'A204', 'E205', 'A302', 'A404', 'EE208', 'EE309', 'EE403', 'EE507'],
                             data={'limitaciones_sesion' : [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
-                                'prioridad_reparto' : [4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 1, 1, 1, 1],
+                                'prioridad_reparto' : [4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1],
                                 })
 
 # Nombre de las asignaturas simplificados
@@ -68,11 +75,11 @@ def recoge_asignaturas_txt():
 
     global grupos_grado
 
-    data = {'plazas_sesion' : [],
-            'num_sesiones' : [],
-            'horario_sesiones' : [],
-            'num_subgrupos' : [],
-            'semana_inicial' : [],
+    data = {config.get('EXCEL', 'PLAZAS_SESION') : [],
+            config.get('EXCEL', config.get('EXCEL', 'NUM_SESIONES')) : [],
+            config.get('EXCEL', 'HORARIO_SESIONES') : [],
+            config.get('EXCEL', 'NUM_SUBGRUPOS') : [],
+            config.get('EXCEL', 'SEMANA_INICIAL') : [],
             }
     
     # Inicializa las limitaciones_sesion en todos los grupos
@@ -90,12 +97,12 @@ def recoge_asignaturas_txt():
         asignaturas.append(datos[0])
         horarios = json.loads(datos[3].replace('\'', '\"'))
         grupos_horarios.append(horarios)
-        data['plazas_sesion'].append(int(datos[1]))
-        data['num_sesiones'].append(int(datos[2]))
+        data[config.get('EXCEL', 'PLAZAS_SESION')].append(int(datos[1]))
+        data[config.get('EXCEL', config.get('EXCEL', 'NUM_SESIONES'))].append(int(datos[2]))
         # Con este for se recogen solo los horarios
-        data['horario_sesiones'].append(list(set([horario.split('/')[1] for horario in horarios])))
-        data['num_subgrupos'].append(int(datos[4]))
-        data['semana_inicial'].append(int(datos[5]))
+        data[config.get('EXCEL', 'HORARIO_SESIONES')].append(list(set([horario.split('/')[1] for horario in horarios])))
+        data[config.get('EXCEL', 'NUM_SUBGRUPOS')].append(int(datos[4]))
+        data[config.get('EXCEL', 'SEMANA_INICIAL')].append(int(datos[5]))
     f.close()
 
     # Recorre los grupos para añadirles las limitaciones por sesion
@@ -113,13 +120,13 @@ def recoge_asignaturas_txt():
 # Devuelve una lista de las semanas que se impartira la asignatura del subgrupo dado
 def semanas_subgrupo(asignatura, subgrupo):
     # Recoge la semana en la que empiezan las sesisones
-    semana_inicial = asignatura['semana_inicial']
+    semana_inicial = asignatura[config.get('EXCEL', 'SEMANA_INICIAL')]
     # Recoge la letra del subgrupo A = 0, B = 1, C = 2 ...
     offset_subgrupo = ord(subgrupo[-1]) - 65
     # Recoge el numero de las sesiones
-    num_sesiones = asignatura['num_sesiones']
+    num_sesiones = asignatura[config.get('EXCEL', config.get('EXCEL', 'NUM_SESIONES'))]
     # Recoge el numero de cuantos subgrupos hay de la asignatura
-    num_subgrupos = asignatura['num_subgrupos']
+    num_subgrupos = asignatura[config.get('EXCEL', 'NUM_SUBGRUPOS')]
 
     # Dependiendo de la letra del subgrupo empezara en una semana u otra
     offset = semana_inicial+offset_subgrupo
@@ -142,8 +149,8 @@ def lee_estudiantes_asignatura(asignatura):
     try:
         # Abre los excel con los alumnos matriculados en cada grupo
         lista_grado = pd.read_excel(
-            PATH_LISTAS / f'{nombre_asignaturas[asignatura.name]}.xlsx', dtype={'Nº Expediente en Centro':str})# [:-1]
-        lista_grado.set_index('Nº Expediente en Centro', inplace=True)
+            PATH_LISTAS / f'{nombre_asignaturas[asignatura.name]}.xlsx', dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})# [:-1]
+        lista_grado.set_index(config.get('EXCEL', 'NUM_EXPEDIENTE').replace('Â', ''), inplace=True)
 
         # Nombre de la columna del Laboratorio Anterior
         laboratorio = ''
@@ -161,7 +168,7 @@ def lee_estudiantes_asignatura(asignatura):
 
         # Se asigna las limitaciones por sesion y la prioridad por reparto
         for idx_estudiante, estudiante in lista_grado.iterrows():
-            grupo = estudiante['Grupo matrícula'].split('(')[1].split(')')[0]
+            grupo = estudiante[config.get('EXCEL', 'GRUPO_MATRICULA')].split('(')[1].split(')')[0]
             # Comprueba si se han introducido todos los grupos de laboratorio de la asignatura 
             if asignatura.name in grupos_grado.at[grupo, 'limitaciones_sesion'].keys():
                 lista_grado.at[idx_estudiante, 'limitaciones_sesion_grupo_grado'] = [grupos_grado.at[grupo, 'limitaciones_sesion']]
@@ -266,7 +273,7 @@ def asignar_subgrupos_estudiantes(lista_estudiantes_subgrupos, asignatura, lista
                 f'subgrupo_{asignatura.name}').size()
 
             # Cuenta plazas de cada subgrupo. La primera vez está vacío, por lo que se comprueba
-            if subgrupo_a_asignar not in subgrupos_tamaños or subgrupos_tamaños[subgrupo_a_asignar] < asignatura['plazas_sesion']:
+            if subgrupo_a_asignar not in subgrupos_tamaños or subgrupos_tamaños[subgrupo_a_asignar] < asignatura[config.get('EXCEL', 'PLAZAS_SESION')]:
                 # Si el estudiante ya tiene un subgrupo de una asignación previa, se obtiene
                 subgrupos_ya_asignados, sesiones_subgrupos_ya_asignados = lee_subgrupos_asignados_estudiante(
                     asignatura, lista_estudiantes_subgrupos, idx_estudiante)
@@ -282,20 +289,24 @@ def asignar_subgrupos_estudiantes(lista_estudiantes_subgrupos, asignatura, lista
                     # Si queda solo un estudiante sin asignar se le dará directamente el subgrupo
                     # O si al añadir el segundo estudiante el número de plazas es impar por lo que se asigna directamente el primero
                     if len(lista_estudiantes_asignatura[lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'] == '-']) == 1 or (
-                        subgrupo_a_asignar in subgrupos_tamaños and subgrupos_tamaños[subgrupo_a_asignar] + 1 == asignatura['plazas_sesion']):
-                        logging.info('%s asignado a %s',
-                                            asignatura.name, subgrupo_a_asignar)
+                        subgrupo_a_asignar in subgrupos_tamaños and subgrupos_tamaños[subgrupo_a_asignar] + 1 == asignatura[config.get('EXCEL', 'PLAZAS_SESION')]):
+                        logging.info('%s asignado a %s', asignatura.name, subgrupo_a_asignar)
                         # Asigna el estudiante un subgrupo
                         lista_estudiantes_asignatura.at[idx_estudiante,
                             f'subgrupo_{asignatura.name}'] = subgrupo_a_asignar
                         break
-                    elif estudiante['prioridad_reparto_grupo_grado'] != 1 and len(estudiantes_sin_asignar[estudiantes_sin_asignar['Grupo matrícula'] == estudiante['Grupo matrícula']]) == 1:
-                        logging.info('%s asignado a %s',
-                                            asignatura.name, subgrupo_a_asignar)
-                        # Asigna el estudiante un subgrupo
-                        lista_estudiantes_asignatura.at[idx_estudiante,
-                            f'subgrupo_{asignatura.name}'] = subgrupo_a_asignar
-                        break
+                    elif len(estudiantes_sin_asignar[estudiantes_sin_asignar[config.get('EXCEL', 'GRUPO_MATRICULA')] == estudiante[config.get('EXCEL', 'GRUPO_MATRICULA')]]) == 1:
+                        # Se añade el estudiante si no es del doble grado
+                        # O si es del doble grado se añade si el horario no coincide con los demás grupos (MA09 in [JU09, JU11])
+                        # Si es del doble grado y coincide el horario busca otro estudiante 
+                        if estudiante['prioridad_reparto_grupo_grado'] != 1 or (
+                            not (estudiante['prioridad_reparto_grupo_grado'] == 1 and (
+                            any(sesion_subgrupo_a_asignar in lista_estudiantes_asignatura[lista_estudiantes_asignatura[config.get('EXCEL', 'GRUPO_MATRICULA')]==grupo].iloc[0]['limitaciones_sesion_grupo_grado'][0][asignatura.name] for grupo in list(lista_estudiantes_asignatura.groupby(config.get('EXCEL', 'GRUPO_MATRICULA')).groups.keys())[1:])))):
+                            logging.info('%s asignado a %s', asignatura.name, subgrupo_a_asignar)
+                            # Asigna el estudiante un subgrupo
+                            lista_estudiantes_asignatura.at[idx_estudiante,
+                                f'subgrupo_{asignatura.name}'] = subgrupo_a_asignar
+                            break
 
                     # Recorre los estudiantes a partir del estudiante actual
                     for idx_est, est in lista_estudiantes_asignatura.loc[idx_estudiante:][1:].iterrows():
@@ -305,7 +316,7 @@ def asignar_subgrupos_estudiantes(lista_estudiantes_subgrupos, asignatura, lista
                             continue
 
                         # Cuenta plazas de cada subgrupo. La primera vez está vacío, por lo que se comprueba
-                        if subgrupo_a_asignar not in subgrupos_tamaños or subgrupos_tamaños[subgrupo_a_asignar] + 1 < asignatura['plazas_sesion']:
+                        if subgrupo_a_asignar not in subgrupos_tamaños or subgrupos_tamaños[subgrupo_a_asignar] + 1 < asignatura[config.get('EXCEL', 'PLAZAS_SESION')]:
                             # Si el estudiante ya tiene un subgrupo de una asignación previa, se obtiene
                             subgrupos_ya_asignados, sesiones_subgrupos_ya_asignados = lee_subgrupos_asignados_estudiante(
                                 asignatura, lista_estudiantes_subgrupos, idx_est)
@@ -329,6 +340,65 @@ def asignar_subgrupos_estudiantes(lista_estudiantes_subgrupos, asignatura, lista
                         break
 
     return lista_estudiantes_asignatura
+
+# Comprueba que los estudiantes se hayan repartido en el menor numero de subgrupos
+def comprueba_reparto_minimo(asignatura, lista_estudiantes):
+
+    # Recoge el numero de estudiantes por cada asignatura de cada subgrupo. Cuenta los que hay en cada subgrupo
+    subgrupos_tamaños = lista_estudiantes.groupby(f'subgrupo_{asignatura.name}').size()
+    # Todos los horarios de la asignatura
+    horarios = set(subgrupo.split('-')[0] for subgrupo in list(subgrupos_tamaños.keys()))
+    # Crea un diccionario con los horarios y un tamaño inicial
+    horarios_tamaños = dict.fromkeys(horarios, 0)
+
+    # Añade el numero de alumnos por horario
+    for subgrupo, tamaño in subgrupos_tamaños.items():
+        horarios_tamaños[subgrupo.split('-')[0]] += tamaño
+    
+    # Recorre los horarios
+    for subgrupo, tamaño in horarios_tamaños.items():
+        # Redondea hacia arriba el tamaño de los horarios entre las plazas por sesion
+        redondeo = math.ceil(tamaño / asignatura[config.get('EXCEL', 'PLAZAS_SESION')])
+        # Si el redondeo es diferente al numero de subrupos introducidos por el usuario se procede a borrar los subgrupos sobrantes 
+        if redondeo != asignatura[config.get('EXCEL', 'NUM_SUBGRUPOS')]:
+            # Recorre los subgrupos sobrantes
+            for i in range(asignatura[config.get('EXCEL', 'NUM_SUBGRUPOS')] - redondeo):
+                # Recorre cada estudiante de los subgrupos sobrantes
+                for idx_estudiante in list(lista_estudiantes.groupby(f'subgrupo_{asignatura.name}').groups[subgrupo + '-' + chr(ord('A') + i + redondeo)]):
+                    # Se eliminan los subgrupos sobrantes y a los alumnos que pertenecian a estos grupos se les reparte de nuevo
+                    lista_estudiantes.at[idx_estudiante, f'subgrupo_{asignatura.name}'] = '-'
+    
+    # Actualiza el numero de estudiantes por cada subgrupo
+    subgrupos_tamaños = lista_estudiantes.groupby(f'subgrupo_{asignatura.name}').size()
+
+    # Si hay estudiantes sin asignar entra
+    if len(lista_estudiantes[lista_estudiantes[f'subgrupo_{asignatura.name}'] == '-']) != 0:
+        subgrupos_tamaños.pop('-')
+
+    return len(lista_estudiantes[lista_estudiantes[f'subgrupo_{asignatura.name}'] == '-']) != 0, list(dict(subgrupos_tamaños).keys()), dict(subgrupos_tamaños)
+
+# Comprueba que los estudiantes se hayan repartido equitativamente
+def comprueba_reparto_equitativo(asignatura, lista_estudiantes):
+
+    # Recoge el numero de estudiantes por cada asignatura de cada subgrupo. Cuenta los que hay en cada subgrupo
+    subgrupos_tamaños = lista_estudiantes.groupby(f'subgrupo_{asignatura.name}').size()
+    # Todos los horarios de la asignatura
+    horarios = set(subgrupo.split('-')[0] for subgrupo in list(subgrupos_tamaños.keys()))
+
+    # Recorre los horarios
+    for horario in horarios:
+        tamaño_actual = -1
+        for subgrupo, tamaño in subgrupos_tamaños.items():
+            # Si el subgrupo esta en el horario actual
+            if horario in subgrupo:
+                # Si es el primer subgrupo lo guarda en el tamaño actual (A)
+                if tamaño_actual == -1:
+                    tamaño_actual = tamaño
+                # Comprueba si la diferencia del tamaño entre subgrupos con el mismo horario es mayor o igual que 3
+                elif abs(tamaño_actual - tamaño) >= 3:
+                    return False
+
+    return True
 
 # Asigna los grupos a los estudiantes
 def asignar_grupos():
@@ -373,7 +443,7 @@ def asignar_grupos():
             # Se crea la lista con todos los horarios posibles por subgrupo Ej: MI09-A, MI09-B, MI09-C, MI09-D
             # Los horarios estan predefinidos en la variable 'asignaturas'
             lista_subgrupos_asignatura = list(map(lambda x: str(x[0]) + '-' + str(x[1]), product(
-                asignatura['horario_sesiones'], string.ascii_uppercase[:asignatura['num_subgrupos']])))
+                asignatura[config.get('EXCEL', 'HORARIO_SESIONES')], string.ascii_uppercase[:asignatura[config.get('EXCEL', 'NUM_SUBGRUPOS')]])))
             
             # Creo un diccionario para saber cuantos estudiantes hay en cada subgrupo
             diccionario_subgrupos_asignatura = {lista_subgrupos_asignatura[i]: 0 for i in range(len(lista_subgrupos_asignatura))}
@@ -382,13 +452,12 @@ def asignar_grupos():
             estudiantes_asignatura = estudiantes_asignatura.sample(frac=1)
 
             # Crea una lista barajada pero ordenada de los estudiantes
-            lista_estudiantes_asignatura = estudiantes_asignatura.sort_values(
-                by=['prioridad_reparto_grupo_grado'])
+            lista_estudiantes_asignatura = estudiantes_asignatura.sort_values(by=['prioridad_reparto_grupo_grado'])
 
             # Salta un Warning si hay mas alumnos que plazas en la asignatura
-            if estudiantes_asignatura.shape[0] > int(asignatura['plazas_sesion']) * len(lista_subgrupos_asignatura):
+            if estudiantes_asignatura.shape[0] > int(asignatura[config.get('EXCEL', 'PLAZAS_SESION')]) * len(lista_subgrupos_asignatura):
                 logging.warning('Asignatura %s tiene más alumnos (%s) que plazas (%s).',
-                                asignatura.name, estudiantes_asignatura.shape[0], asignatura['plazas_sesion'] * len(lista_subgrupos_asignatura))
+                                asignatura.name, estudiantes_asignatura.shape[0], asignatura[config.get('EXCEL', 'PLAZAS_SESION')] * len(lista_subgrupos_asignatura))
             
             # Crea una lista con los estudiantes asignados con sus respectivos grupos de laboratorio
             lista_estudiantes_asignatura = asignar_subgrupos_estudiantes(lista_estudiantes_subgrupos, asignatura, lista_estudiantes_asignatura, diccionario_subgrupos_asignatura, lista_subgrupos_asignatura)
@@ -396,20 +465,34 @@ def asignar_grupos():
             logging.error('\n\nLista estudiantes sin grupo de %s', asignatura.name)
             logging.error(lista_estudiantes_asignatura[lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'] == '-'])
 
-            l.append(lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'])
-            lista_estudiantes_subgrupos = pd.concat(l, axis=1)
-
             # Numero de plazas por cada asignatura
-            num_plazas = int(asignatura['plazas_sesion']) * len(asignatura['horario_sesiones']) * asignatura['num_subgrupos']
+            num_plazas = int(asignatura[config.get('EXCEL', 'PLAZAS_SESION')]) * len(asignatura[config.get('EXCEL', 'HORARIO_SESIONES')]) * asignatura[config.get('EXCEL', 'NUM_SUBGRUPOS')]
             # Se hace la diferencia entre el número de alumnos y el número de plazas por asignatura
             # Si se queda negativo es porque hay plazas demás
             # Si se queda positivo es porque faltan plazas
             plazas_sin_asignar = estudiantes_asignatura.shape[0] - num_plazas
             # Lista de alumnos que no se les han asigando la asignatura
-            lista_alumnos_sin_asignar = lista_estudiantes_subgrupos[lista_estudiantes_subgrupos[f'subgrupo_{asignatura.name}'] == '-']
+            lista_alumnos_sin_asignar = lista_estudiantes_asignatura[lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'] == '-']
 
             # Comprueba que los alumnos no asignados son por falta de plazas o que no sean impares
-            if len(lista_alumnos_sin_asignar) <= (plazas_sin_asignar if plazas_sin_asignar > 0 else 0) or len(estudiantes_asignatura) == 0:
+            if len(lista_alumnos_sin_asignar) <= (plazas_sin_asignar if plazas_sin_asignar > 0 else 0):
+                # Comprueba que los estudiantes se hayan repartido en el menor numero de subgrupos
+                comprueba, lista_subgrupos_asignatura, diccionario_subgrupos_asignatura = comprueba_reparto_minimo(asignatura, lista_estudiantes_asignatura)
+
+                # Si se necesita volver a repartir a los estudiantes por haber reducido el tamaño de los subgrupos entra
+                if comprueba:
+                    # Crea una lista con los estudiantes asignados con sus respectivos grupos de laboratorio
+                    lista_estudiantes_asignatura = asignar_subgrupos_estudiantes(lista_estudiantes_subgrupos, asignatura, lista_estudiantes_asignatura, diccionario_subgrupos_asignatura, lista_subgrupos_asignatura)
+            
+            # Lista de alumnos que no se les han asigando la asignatura
+            lista_alumnos_sin_asignar = lista_estudiantes_asignatura[lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'] == '-']
+
+            l.append(lista_estudiantes_asignatura[f'subgrupo_{asignatura.name}'])
+            lista_estudiantes_subgrupos = pd.concat(l, axis=1)
+
+            # Comprueba que los alumnos no asignados son por falta de plazas o que no sean impares
+            # Y Comprueba que los estudiantes se hayan repartido equitativamente
+            if len(lista_alumnos_sin_asignar) <= (plazas_sin_asignar if plazas_sin_asignar > 0 else 0) and comprueba_reparto_equitativo(asignatura, lista_estudiantes_asignatura):
                 exito = True
             # Via de escape: Si se recorre una asignatura y no se asigna de manera correcta se barajan las asignaturas
             # Se optimiza el programa porque de esta forma no es necesario recorrer todas las asignaturas si no se realiza una asignación eficiente
@@ -421,7 +504,7 @@ def asignar_grupos():
                 for idx_estudiante, _ in lista_alumnos_sin_asignar.iterrows():
                     for subgrupo, num_asignados in lista_estudiantes_asignatura.groupby(f'subgrupo_{asignatura.name}').size().items():
                         if subgrupo.split('-')[0] in estudiantes_asignatura.at[idx_estudiante, 'limitaciones_sesion_grupo_grado'][0][asignatura.name]:
-                            if num_asignados < asignatura['plazas_sesion']:
+                            if num_asignados < asignatura[config.get('EXCEL', 'PLAZAS_SESION')]:
                                 encontrado = True
                                 break
                     
@@ -429,7 +512,7 @@ def asignar_grupos():
                         break
                 
                 # Si el estudiante no tiene plazas en sus respectivos grupos se genera un error
-                if not encontrado:
+                if not encontrado and not lista_alumnos_sin_asignar.empty:
                     cod_error = 2
                     error = f'No hay plazas suficientes para la asignatura de {asignatura.name} en los subgrupos {estudiantes_asignatura.at[list(lista_alumnos_sin_asignar.index)[0], "limitaciones_sesion_grupo_grado"][0][asignatura.name]}.'
                 
@@ -467,23 +550,27 @@ def guardar_lista_grupos():
         for archivo in archivos:
             # Compara los nombres de los excels con las asignaturas
             if any(nombre_asignaturas[asignatura] in str(archivo) for asignatura in list(asignaturas.index)):
-                lista_datos_grupo = pd.read_excel(archivo, dtype={'Nº Expediente en Centro':str})
-                lista_datos_grupo.set_index('Nº Expediente en Centro', inplace=True)
+                lista_datos_grupo = pd.read_excel(archivo, dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})
+                lista_datos_grupo.set_index(config.get('EXCEL', 'NUM_EXPEDIENTE'), inplace=True)
                 # Se agregan las columnas que se quieren visualizar en el excel
-                df = pd.concat([df, lista_datos_grupo[['Apellidos', 'Nombre']]])
+                df = pd.concat([df, lista_datos_grupo[[config.get('EXCEL', 'APELLIDOS'), config.get('EXCEL', 'NOMBRE')]]])
 
         # Borra los duplicados y luego los ordena segun su Nº de Expediente
         lista_estudiantes_datos = df[~df.index.duplicated()].sort_index()
 
         # Juntan en un lista a los estudiantes y los grupos asignados y lo ponen en el archivo excel
         lista_junta = pd.merge(lista_estudiantes_datos, lista_estudiantes_subgrupos, left_index=True, right_index=True)
-        lista_junta.to_excel('lista_subgrupos.xlsx')
+        lista_junta.to_excel(PATH_EXCEL / config.get('ARCHIVOS', 'LISTA_EXCEL'))
+
+        for col in lista_junta.columns:
+            if col.split('_')[0] == 'subgrupo':
+                lista_junta[[config.get('EXCEL', 'APELLIDOS'), config.get('EXCEL', 'NOMBRE'), col]][lista_junta[col].notna()].to_excel(PATH_EXCELS / str(col.split('_')[1] + '_' + datetime.datetime.now().strftime('%d%m%Y') + '.xlsx'))
     
     except PermissionError as e:
         cod_error = 3
         error = f'El Excel {e.filename} esta abierto, si quiere realizar la operación debe cerrarlo.'
     
-    return cod_error, error
+    return cod_error, error, str(PATH_EXCEL.absolute()), str(PATH_EXCELS.absolute())
 
 # Traduce los meses del ingles al español
 def traduce_meses(dia_mes):
@@ -504,8 +591,8 @@ def traduce_meses(dia_mes):
     return dia_mes.split(' ')[0] + ' ' +  mes_espanol[dia_mes.split(' ')[1]]
 
 
-# Crea un pdf con los grupos y horarios
-def crea_pdf_grupos_laboratorios(pon_nombre):
+# Crea un html con los grupos y horarios
+def crea_html_grupos_laboratorios(pon_nombre):
     
     global cod_error
     error = ''
@@ -515,11 +602,13 @@ def crea_pdf_grupos_laboratorios(pon_nombre):
     horas = {'09' : '9:30', '11' : '11:30', '15' : '15:30', '17' : '17:30'}
 
     # Abre el excel con las listas de los subgrupos
-    lista_datos_grupo = pd.read_excel('lista_subgrupos.xlsx', dtype={'Nº Expediente en Centro':str})
-    lista_datos_grupo.set_index('Nº Expediente en Centro', inplace=True)
+    lista_datos_grupo = pd.read_excel(config.get('ARCHIVOS', 'LISTA_EXCEL'), dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})
+    if lista_datos_grupo.empty:
+        return 5, f'{config.get("ARCHIVOS", "LISTA_EXCEL")} esta vacio.', ''
+    lista_datos_grupo.set_index(config.get('EXCEL', 'NUM_EXPEDIENTE'), inplace=True)
 
     # Abre el excel con las semanas de inicio
-    semanas = pd.read_excel('Semanas.xlsx', index_col=0)
+    semanas = pd.read_excel(config.get('ARCHIVOS', 'SEMANAS'), index_col=0)
 
     asignaturas = list()
     estudiantes = pd.DataFrame()
@@ -623,13 +712,13 @@ def crea_pdf_grupos_laboratorios(pon_nombre):
             """
             
             # Recoge los estudiantes de este subgrupo
-            estudiantes = lista_datos_grupo.loc[lista_datos_grupo[f'subgrupo_{asignatura}'] == subgrupo, ['Apellidos', 'Nombre', f'subgrupo_{asignatura}']]
+            estudiantes = lista_datos_grupo.loc[lista_datos_grupo[f'subgrupo_{asignatura}'] == subgrupo, [config.get('EXCEL', 'APELLIDOS'), config.get('EXCEL', 'NOMBRE'), f'subgrupo_{asignatura}']]
             
-            # Si se ha elegido la opcion de Apellidos, Nombre se escribirá asi en el pdf
+            # Si se ha elegido la opcion de Apellidos, Nombre se escribirá asi en el html
             if pon_nombre:
                 # Recorre los estudiantes para añadirlos a la tabla
                 for _, estudiante in estudiantes.iterrows():
-                    html += f'<tr><td class="tabla">{unidecode.unidecode(estudiante["Apellidos"] + ", " + estudiante["Nombre"])}</td></tr>'
+                    html += f'<tr><td class="tabla">{unidecode.unidecode(estudiante[config.get("EXCEL", "APELLIDOS")] + ", " + estudiante[config.get("EXCEL", "NOMBRE")])}</td></tr>'
             else:
                 # Recorre los estudiantes para añadir su numero de matricula a la tabla
                 for matricula, _ in estudiantes.iterrows():
@@ -652,16 +741,9 @@ def crea_pdf_grupos_laboratorios(pon_nombre):
         html += '</body></html>'
 
         # Abre el fichero en modo escritura
-        f = open(PATH_PDF / f'{asignatura}.html', 'w')
+        f = open(PATH_HTML / f'{asignatura}.html', 'w')
         # Añade el código html al fichero
         f.write(html)
         f.close()
-
-        # Ejecuta el comando wkhtmltopdf para convertir el HTML a PDF
-        os.system('wkhtmltopdf \"' + str(PATH_PDF / f'{asignatura}.html') + '\" \"' + str(PATH_PDF / f'{asignatura}.pdf\"'))
-        
-        # Borra los archivos html
-        if os.path.exists(PATH_PDF / f'{asignatura}.html'):
-            os.remove(PATH_PDF / f'{asignatura}.html')
     
-    return cod_error, error
+    return cod_error, error, str(PATH_HTML.absolute())

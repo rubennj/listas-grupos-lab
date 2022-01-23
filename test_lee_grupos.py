@@ -7,7 +7,7 @@ La primera se utiliza para mostrar el tamaño de los subgrupos.
 La segunda para mostrar los estudiantes no asignados.
 La tercera ejecuta el programa principal lee_grupos
 La cuarta saca los subgrupos de un estudiante metiendo su número de matrícula
-La quinta genera un PDF con las listas de laboratorio
+La quinta genera un html con las listas de laboratorio
 La sexta finaliza el programa
 
 """
@@ -19,7 +19,7 @@ import lee_grupos
 fin = False
 
 while not fin:
-    opcion = input('1: Mostrar excel tamaño subgrupos\n2: Mostrar excel no asignados\n3: Ejecutar asignar_grupos\n4: Escoge un estudiante\n5: Generar PDF\n6: Fin de programa\n')
+    opcion = input('1: Mostrar excel tamaño subgrupos\n2: Mostrar excel no asignados\n3: Ejecutar asignar_grupos\n4: Escoge un estudiante\n5: Generar HTML\n6: Fin de programa\n')
 
     # Muestra los alumnos asignados a cada subgrupo de cada asignatura
     if opcion == '1':
@@ -76,8 +76,8 @@ while not fin:
             print('Se ha introducido mal el Nº de Matricula')
         print()
     elif opcion == '5':
-        # Crea los pdf a partir del archivo lista_subgrupos
-        lee_grupos.crea_pdf_grupos_laboratorios()
+        # Crea los html a partir del archivo lista_subgrupos
+        lee_grupos.crea_html_grupos_laboratorios(False)
         print()
     elif opcion == '6':
         fin = True
