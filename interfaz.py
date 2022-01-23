@@ -17,15 +17,13 @@ import json
 
 import lee_grupos
 
-# Grupos de los laboratorios
-grupos = [
-    # Mañana
-    ['A207', 'E208', 'A309', 'M306', 'A408'],
-    # Tarde
-    ['A204', 'E205', 'A302', 'M301', 'A404'],
-    # Dobles Grados y Optativas
-    ['EE208', 'EE309', 'EE403', 'EE507', 'D307', 'DM306', 'Q308']
-]
+borrar = False
+# Grupos de los laboratorios [Mañana, Tarde, Ambos]
+grupos = [[], [], []]
+
+# Crea los grupos de los laboratorios
+for i, lista_grupos in enumerate(lee_grupos.config.options('GRUPOS')):
+    grupos[i] = lee_grupos.config.get('GRUPOS', lista_grupos).split(',')
 
 class GUI(QMainWindow):
     
@@ -43,17 +41,43 @@ class GUI(QMainWindow):
         self.BtnAyudaAsignacion.setStyleSheet("QPushButton{border-color: rgba(40, 135, 199, 70%);}")
         self.BtnAyudaCalendarioAlumnos.clicked.connect(self.fn_ayuda)
         self.BtnAyudaCalendarioAlumnos.setStyleSheet("QPushButton{border-color: rgba(40, 135, 199, 70%);}")
+        self.BtnAsignacion.setIcon(QtGui.QIcon('./img/asignar.png'))
+        self.BtnAsignacion.setIconSize(QSize(13, 13))
         self.BtnAsignacion.clicked.connect(self.fn_asignar_grupos)
         self.BtnGuardarExcel.setEnabled(False)
+        self.BtnGuardarExcel.setIcon(QtGui.QIcon('./img/excelDes.png'))
+        self.BtnGuardarExcel.setIconSize(QSize(15, 15))
         self.BtnGuardarExcel.clicked.connect(self.fn_guarda_excel)
-        self.BtnCrearPDF.setEnabled(False)
-        self.BtnCrearPDF.clicked.connect(self.fn_guarda_pdf)
+        self.BtnCrearHTML.setEnabled(False)
+        self.BtnCrearHTML.setIcon(QtGui.QIcon('./img/htmlDes.png'))
+        self.BtnCrearHTML.setIconSize(QSize(15, 15))
+        self.BtnCrearHTML.clicked.connect(self.fn_guarda_html)
+        self.BtnAceptar.setIcon(QtGui.QIcon('./img/aceptar.png'))
+        self.BtnAceptar.setIconSize(QSize(11, 11))
         self.BtnAceptar.clicked.connect(self.fn_guardar_asignatura)
+        self.BtnBorrarLabs.setIcon(QtGui.QIcon('./img/borrarTodo.png'))
+        self.BtnBorrarLabs.setIconSize(QSize(12, 12))
         self.BtnBorrarLabs.clicked.connect(self.fn_borrar_laboratorios)
+        self.BtnBorrarAulas.setIcon(QtGui.QIcon('./img/borrar.png'))
+        self.BtnBorrarAulas.setIconSize(QSize(11, 11)) 
         self.BtnBorrarAulas.clicked.connect(self.fn_borrar_aulas)
+        self.BtnBorrarHorario.setIcon(QtGui.QIcon('./img/borrarTodo.png'))
+        self.BtnBorrarHorario.setIconSize(QSize(12, 12)) 
         self.BtnBorrarHorario.clicked.connect(self.fn_borrar_horarios)
+        self.BtnBorrarHorarioSeleccionado.setIcon(QtGui.QIcon('./img/borrar.png'))
+        self.BtnBorrarHorarioSeleccionado.setIconSize(QSize(12, 12)) 
+        self.BtnBorrarHorarioSeleccionado.clicked.connect(self.fn_borrar_horario_seleccionado)
+        self.BtnGuardaHorario.setIcon(QtGui.QIcon('./img/guardar.png'))
+        self.BtnGuardaHorario.setIconSize(QSize(10, 10))
         self.BtnGuardaHorario.clicked.connect(self.fn_guardar_horarios)
+        self.BtnGuardarAulas.setIcon(QtGui.QIcon('./img/guardar.png'))
+        self.BtnGuardarAulas.setIconSize(QSize(10, 10))
+        self.BtnGuardarAulas.clicked.connect(self.fn_guardar_aulas)
+        self.BtnGuardaAsignaturas.setIcon(QtGui.QIcon('./img/aceptar.png'))
+        self.BtnGuardaAsignaturas.setIconSize(QSize(11, 11))
         self.BtnGuardaAsignaturas.clicked.connect(self.fn_carga_asignaturas)
+        self.BtnExportarPDF.setIcon(QtGui.QIcon('./img/pdfAct.png'))
+        self.BtnExportarPDF.setIconSize(QSize(13, 13))
         self.BtnExportarPDF.clicked.connect(self.fn_exportar_PDF)
         # Evento de las pestañas
         self.tabWidget.currentChanged.connect(self.fn_reinicia_pestanas)
@@ -80,25 +104,35 @@ class GUI(QMainWindow):
     def fn_asignar_grupos(self):
         cod_error, error = lee_grupos.asignar_grupos()
         if cod_error == 0:
-            mensaje_alerta('Inf', 'Ha terminado de asignar a los estudiantes.')
             self.BtnGuardarExcel.setEnabled(True)
+            self.BtnGuardarExcel.setIcon(QtGui.QIcon('./img/excelAct.png'))
+            mensaje_alerta('Inf', 'Ha terminado de asignar a los estudiantes.')
         else:
             mensaje_alerta('Err', error)
     
     # Guarda a los estudiantes en el excel
     def fn_guarda_excel(self):
-        cod_error, error = lee_grupos.guardar_lista_grupos()
+        cod_error, error, rutaExcel, rutaExcels = lee_grupos.guardar_lista_grupos()
         if cod_error == 0:
+            self.BtnCrearHTML.setEnabled(True)
+            self.lblSeleccionFormato.setEnabled(True)
+            self.radioBtnMatricula.setEnabled(True)
+            self.radioBtnNombre.setEnabled(True)
+            self.BtnCrearHTML.setEnabled(True)
+            self.BtnCrearHTML.setIcon(QtGui.QIcon('./img/htmlAct.png'))
+            self.lblRuta.setText('RUTA DE LOS ARCHIVOS')
+            self.lblRutaArchivosExcel.setText('Ruta de lista_subgrupos:  ' + rutaExcel)
+            self.lblRutaArchivosExcels.setText('Ruta de los Excels:  ' + rutaExcels)
             mensaje_alerta('Inf', 'Ha terminado de guardar a los estudiantes en el Excel.')
-            self.BtnCrearPDF.setEnabled(True)
         else:
             mensaje_alerta('Err', error)
     
-    # Guarda a los estudiantes en el PDF
-    def fn_guarda_pdf(self):
-        cod_error, error = lee_grupos.crea_pdf_grupos_laboratorios(self.radioBtnNombre.isChecked())
+    # Guarda a los estudiantes en el HTML
+    def fn_guarda_html(self):
+        cod_error, error, rutaHTML = lee_grupos.crea_html_grupos_laboratorios(self.radioBtnNombre.isChecked())
         if cod_error == 0:
-            mensaje_alerta('Inf', 'Ha terminado de guardar a los estudiantes en el PDF.')
+            self.lblRutaArchivosHTML.setText('Ruta de los HTMLs:   ' + rutaHTML)
+            mensaje_alerta('Inf', 'Ha terminado de guardar a los estudiantes en el HTML.')
         else:
             mensaje_alerta('Err', error)
 
@@ -111,77 +145,43 @@ class GUI(QMainWindow):
         horario = coger_horarios(self.AreaHorarios, asignatura)
         num_subgrupos = self.NumSubgruposText.value()
         semana_inicial = self.SemanaInicialText.value()
-        asignaturaCompartida1 = self.ComboBoxAsignaturaComparten1.currentText().lower()
-        asignaturaCompartida2 = self.ComboBoxAsignaturaComparten2.currentText().lower()
         
         # Comprueba que las variables esten correctamente introducidas por las interfaz y las añade en el txt
         if asignatura != '':
             if horario != []:
                 if plazas != 0 and num_sesiones != 0 and num_subgrupos != 0 and semana_inicial != 0:
-                    if comprobarAsignaturas(asignatura, horario, asignaturaCompartida1, asignaturaCompartida2):
-                        asignaturas = list()
-                        aulaCompartida = list()
+                    asignaturas = list()
 
-                        # Abre el fichero en modo lectura
-                        f = open('asignaturas.txt', 'r')
-                        # Lee todo el fichero y lo guarda en la lista
-                        for asig in f:
-                            asignaturas.append(asig.strip('\n'))
-                        f.close()
-                        
-                        # Abre el fichero en modo escritura
-                        f = open('compartenAula.txt', 'r')
-                        # Escribe en el fichero las asignaturas
-                        for aula in f:
-                            aulaCompartida.append(aula)
-                        f.close()
+                    # Abre el fichero en modo lectura
+                    f = open('asignaturas.txt', 'r')
+                    # Lee todo el fichero y lo guarda en la lista
+                    for asig in f:
+                        asignaturas.append(asig.strip('\n'))
+                    f.close()
 
-                        # Comprueba si la asignatura introducida esta en la lista
-                        encontrado = False
-                        i = 0
-                        while not encontrado and i < len(asignaturas):
-                            # Si encuentra la asignatura introducida como esta repetida se sobreescribe
-                            if asignatura == asignaturas[i].split('-')[0]:
-                                asignaturas[i] = asignatura + '-' + str(plazas) + '-' + str(num_sesiones) + '-' + str(horario) + '-' + str(num_subgrupos) + '-' + str(semana_inicial)
-                                encontrado = True
-                            i += 1
-                        
-                        # Si no se encuentra una misma asignatura se añade a las asignaturas ya existentes
-                        if not encontrado:
-                            texto = asignatura + '-' + str(plazas) + '-' + str(num_sesiones) + '-' + str(horario) + '-' + str(num_subgrupos) + '-' + str(semana_inicial)
-                            asignaturas.append(texto)
-                        
-                        # Abre el fichero en modo escritura
-                        f = open('asignaturas.txt', 'w')
-                        # Escribe en el fichero las asignaturas
-                        for txt in asignaturas:
-                            f.write(txt + '\n')
-                        f.close()
-
-                        encontrado = False
-
-                        # Abre el fichero en modo escritura
-                        f = open('compartenAula.txt', 'w')
-                        # Escribe en el fichero las asignaturas
-                        for aula in aulaCompartida:
-                            if asignaturaCompartida1 in aula.strip('\n').split('/') and asignaturaCompartida2 in aula.strip('\n').split('/'):
-                                mensaje_alerta('War', 'Las asignaturas con aulas compartidas ya estan en el txt.')
-                                encontrado = True
-                            f.write(aula)
-                        
-                        # Si no se ha encontrado que las asignaturasCompartidas estan ya en el txt se añaden
-                        if not encontrado and not (asignaturaCompartida1 == '' or asignaturaCompartida2 == ''):
-                            f.write(asignaturaCompartida1 + '/' + asignaturaCompartida2 + '\n')
-                            aulaCompartida.append(asignaturaCompartida1 + '/' + asignaturaCompartida2)
-
-                        f.close()
-                        
-                        self.TablaCompartenAula.setRowCount(len(aulaCompartida))
-
-                        for index, aula in enumerate(aulaCompartida):
-                            self.TablaCompartenAula.setItem(index, 0, QTableWidgetItem(aula.strip('\n')))
-                
-                        mensaje_alerta('Inf', 'Añadido correctamente.')
+                    # Comprueba si la asignatura introducida esta en la lista
+                    encontrado = False
+                    i = 0
+                    while not encontrado and i < len(asignaturas):
+                        # Si encuentra la asignatura introducida como esta repetida se sobreescribe
+                        if asignatura == asignaturas[i].split('-')[0]:
+                            asignaturas[i] = asignatura + '-' + str(plazas) + '-' + str(num_sesiones) + '-' + str(horario) + '-' + str(num_subgrupos) + '-' + str(semana_inicial)
+                            encontrado = True
+                        i += 1
+                    
+                    # Si no se encuentra una misma asignatura se añade a las asignaturas ya existentes
+                    if not encontrado:
+                        texto = asignatura + '-' + str(plazas) + '-' + str(num_sesiones) + '-' + str(horario) + '-' + str(num_subgrupos) + '-' + str(semana_inicial)
+                        asignaturas.append(texto)
+                    
+                    # Abre el fichero en modo escritura
+                    f = open('asignaturas.txt', 'w')
+                    # Escribe en el fichero las asignaturas
+                    for txt in asignaturas:
+                        f.write(txt + '\n')
+                    f.close()
+            
+                    mensaje_alerta('Inf', 'Añadido correctamente.')
 
         # Si se han introducido mal los datos salta un error
                 else:
@@ -191,19 +191,99 @@ class GUI(QMainWindow):
         else:
             mensaje_alerta('Err', 'No se ha asignado la asignatura.')
 
+    # Guarda las aulas
+    def fn_guardar_aulas(self):
+
+        asignaturaCompartida1 = self.ComboBoxAsignaturaComparten1.currentText().lower()
+        asignaturaCompartida2 = self.ComboBoxAsignaturaComparten2.currentText().lower()
+
+        # Comprueba que dos asignaturas no sean iguales o esten vacias y si coinciden los horarios
+        if comprobarAsignaturas(asignaturaCompartida1, asignaturaCompartida2):
+            
+            aulaCompartida = list()
+            encontrado = False
+
+            # Abre el fichero en modo escritura
+            f = open('compartenAula.txt', 'r')
+            # Escribe en el fichero las asignaturas
+            for aula in f:
+                aulaCompartida.append(aula.strip('\n'))
+            f.close()
+
+            # Abre el fichero en modo escritura
+            f = open('compartenAula.txt', 'w')
+            # Escribe en el fichero las asignaturas
+            for aula in aulaCompartida:
+                if asignaturaCompartida1 in aula.split('/') and asignaturaCompartida2 in aula.split('/'):
+                    mensaje_alerta('War', 'Las asignaturas con aulas compartidas ya estan en el txt.')
+                    encontrado = True
+                f.write(aula + '\n')
+            
+            # # Si no se ha encontrado que las asignaturasCompartidas estan ya en el txt se añaden
+            if not encontrado and not (asignaturaCompartida1 == '' or asignaturaCompartida2 == ''):
+                f.write(asignaturaCompartida1 + '/' + asignaturaCompartida2 + '\n')
+                aulaCompartida.append(asignaturaCompartida1 + '/' + asignaturaCompartida2)
+
+            f.close()
+
+            self.TablaCompartenAula.clearContents()
+            self.TablaCompartenAula.setRowCount(len(aulaCompartida))
+
+            for index, aula in enumerate(aulaCompartida):
+                self.TablaCompartenAula.setItem(index, 0, QTableWidgetItem(aula.strip('\n')))
+
     # Manda un mensaje de confirmacion para borrar los laboratorios
     def fn_borrar_laboratorios(self):
+
+        global borrar
+
+        borrar = False
+
         alerta = QMessageBox(QMessageBox.Question, 'Alerta', '¿Estas seguro de querer borrar permanetemente la lista de los laboratorios?')
         alerta.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         alerta.buttonClicked.connect(borrar_laboratorios)
         alerta.exec()
+
+        # Si se borran las asignaturas se reiniciaran las variables de interfaz 
+        if borrar:
+            self.ComboBoxAsignatura.clear()
+            self.fn_cargar_asignaturas()
+            self.ComboBoxAsignatura.setCurrentIndex(-1)
+            self.AreaHorarios.setWidget(QWidget())
+            self.PlazasText.setValue(0)
+            self.NumSesionesText.setValue(0)
+            self.NumSubgruposText.setValue(0)
+            self.SemanaInicialText.setValue(0)
     
-    # Manda un mensaje de confirmacion para borrar las aulas
+    # Borrar las aulas Compartidas
     def fn_borrar_aulas(self):
-        self.TablaCompartenAula.clearContents()
-        self.TablaCompartenAula.setRowCount(0)
-        f = open('compartenAula.txt', 'w')
-        f.close()
+
+        # Guarda todos los horarios seleccionados
+        if self.TablaCompartenAula.selectedItems():
+            aulasCompartidas = list()
+
+            # Guarda todos los horarios seleccionados
+            for i in range(self.TablaCompartenAula.rowCount()):
+                if not self.TablaCompartenAula.item(i, 0).isSelected():
+                    aulasCompartidas.append(self.TablaCompartenAula.item(i, 0).text())
+            
+            self.TablaCompartenAula.clearContents()
+            self.TablaCompartenAula.setRowCount(len(aulasCompartidas))
+            
+            # Abre el fichero en modo escritura
+            f = open('compartenAula.txt', 'w')
+            # Escribe en el fichero las aulas compartidas
+            for index, aula in enumerate(aulasCompartidas):
+                # Crea el texto y lo centra
+                # texto = QTableWidgetItem(aula.strip('\n'))
+                # texto.setTextAlignment(Qt.AlignCenter)
+                # Añade el texto en la tabla
+                self.TablaCompartenAula.setItem(index, 0, QTableWidgetItem(aula.strip('\n')))
+                f.write(aula)
+            f.close()
+
+        else:
+            mensaje_alerta('War', 'No se ha seleccionado ningúna aula compartida.')
 
     # Selecciona la asignatura que se ha seleccionado en el TreeView
     def fn_selecciona_asignatura(self, index):
@@ -214,7 +294,6 @@ class GUI(QMainWindow):
             self.lblAsignaturaAsignada.setText(asignatura)
             self.ComboBoxHoras.clear()
             self.ComboBoxDias.setCurrentIndex(-1)
-
 
             inserta_horarios_tabla(self.TablaHorarios, asignatura)
             inserta_grupos(self.ComboBoxGrupos, asignatura)
@@ -252,7 +331,8 @@ class GUI(QMainWindow):
         # Si no se ha seleccionado una asignatura salta un mensaje de error
         if asignatura != '...':
             
-            asignaturas = list()
+            asignaturas1 = list()
+            asignaturas2 = list()
             encontrado = False
 
             # Abre el fichero en modo lectura
@@ -261,17 +341,33 @@ class GUI(QMainWindow):
             for asig in f:
                 # Añade todas las asignaturas a la lista menos la que se quiere borrar
                 if asignatura.lower() != asig.split('-')[0].lower():
-                    asignaturas.append(asig.strip('\n'))
+                    asignaturas1.append(asig.strip('\n'))
                 else:
                     encontrado = True
             f.close()
 
             # Comprueba si se ha encontrado la asignatura en el fichero
-            if encontrado:                    
+            if encontrado:
+                # Abre el fichero en modo lectura
+                f = open('asignaturas.txt', 'r')
+                # Lee todo el fichero y lo guarda en la lista
+                for asig in f:
+                    # Añade todas las asignaturas a la lista menos la que se quiere borrar
+                    if asignatura.lower() != asig.split('-')[0].lower():
+                        asignaturas2.append(asig.strip('\n'))
+                f.close()
+
                 # Abre el fichero en modo escritura
                 f = open('horarios.txt', 'w')
                 # Escribe en el fichero las asignaturas
-                for txt in asignaturas:
+                for txt in asignaturas1:
+                    f.write(txt + '\n')
+                f.close()
+
+                # Abre el fichero en modo escritura
+                f = open('asignaturas.txt', 'w')
+                # Escribe en el fichero las asignaturas
+                for txt in asignaturas2:
                     f.write(txt + '\n')
                 f.close()
                 
@@ -284,7 +380,61 @@ class GUI(QMainWindow):
         else:
             mensaje_alerta('Err', 'No se ha asignado la asignatura.')
 
-        
+    # Borra el horario seleccionado
+    def fn_borrar_horario_seleccionado(self):
+        # Label donde esta guardada la asignatura
+        asignatura = self.lblAsignaturaAsignada.text()
+
+        # Si no se ha seleccionado una asignatura salta un mensaje de error
+        if asignatura != '...':
+            
+            asignaturas = list()
+            horarios = list()
+            txt = ''
+
+            # Guarda todos los horarios seleccionados
+            for item in self.TablaHorarios.selectedItems():
+                horarios.append(item.text())
+
+            # Si se han seleccionado algun horario entra
+            if horarios:
+                # Abre el fichero en modo lectura
+                f = open('horarios.txt', 'r')
+                # Lee todo el fichero y lo guarda en la lista
+                for asig in f:
+                    # Añade todas las asignaturas a la lista menos la que se quiere borrar
+                    if asignatura.lower() == asig.split('-')[0].lower():
+                        aux = json.loads(asig.split('-')[1].replace('\'','\"'))
+
+                        # Quita todos los horarios seleccionados
+                        for horario in horarios:
+                            aux.remove(horario)
+                        
+                        # Si la lista no esta vacia se añadira al txt 
+                        if aux:
+                            txt = asig.split('-')[0].lower() + '-' + str(aux)
+                        else:
+                            txt = ''
+                    else:
+                        txt = asig.strip('\n')
+
+                    if txt != '':
+                        asignaturas.append(txt)
+
+                f.close()
+
+                # Abre el fichero en modo escritura
+                f = open('horarios.txt', 'w')
+                # Escribe en el fichero las asignaturas
+                for txt in asignaturas:
+                    f.write(txt + '\n')
+                f.close()
+
+                # Inserta los horarios en la tabla
+                inserta_horarios_tabla(self.TablaHorarios, asignatura)
+
+            else:
+                mensaje_alerta('War', 'No se ha seleccionado ningún horario.')
 
     # Guarda los horarios de las asignaturas
     def fn_guardar_horarios(self):
@@ -314,7 +464,7 @@ class GUI(QMainWindow):
                 i = 0
                 while not encontrado and i < len(asignaturas):
                     # Si la asignatura introducida esta repetida se sobreescribe
-                    if asignatura == asignaturas[i].split('-')[0]:
+                    if asignatura.lower() == asignaturas[i].split('-')[0]:
                         # Se recoge los horarios de las asignaturas del fichero
                         # Como la cadena esta en formato string se traduce a formato lista
                         horarios = json.loads(asignaturas[i].split('-')[1].replace('\'','\"'))
@@ -332,7 +482,7 @@ class GUI(QMainWindow):
                         if not encontrado:
                             horarios.append(grupo + '/' + dia + hora)
                             horarios = ordenar_horarios(horarios)
-                            asignaturas[i] = asignatura + '-' + str(horarios)
+                            asignaturas[i] = asignatura.lower() + '-' + str(horarios)
                             encontrado = True
                     i += 1
                 
@@ -352,8 +502,8 @@ class GUI(QMainWindow):
                 if repetido:
                     mensaje_alerta('Inf', 'Ya se ha asignado este horario a esta asignatura.')
                 else:
-                    mensaje_alerta('Inf', 'Añadido correctamente.')
                     inserta_horarios_tabla(self.TablaHorarios, asignatura)
+                    mensaje_alerta('Inf', 'Añadido correctamente.')
             else:
                 mensaje_alerta('Err', 'No se ha asignado el grupo, el día o la hora.')
         else:
@@ -366,8 +516,15 @@ class GUI(QMainWindow):
         # Pestaña Asignación
         if nombreTab == 'Asignación':
             self.BtnGuardarExcel.setEnabled(False)
-            self.BtnCrearPDF.setEnabled(False)
+            self.BtnCrearHTML.setEnabled(False)
+            self.BtnCrearHTML.setIcon(QtGui.QIcon('./img/htmlDes.png'))
             self.radioBtnNombre.setChecked(True)
+            self.lblSeleccionFormato.setEnabled(False)
+            self.radioBtnMatricula.setEnabled(False)
+            self.radioBtnNombre.setEnabled(False)
+            self.lblRuta.setText('')
+            self.lblRutaArchivosExcel.setText('')
+            self.lblRutaArchivosHTML.setText('')
         # Pestaña Disponibilidad
         elif nombreTab == 'Disponibilidad':
             self.ComboBoxGrupos.setCurrentIndex(-1)
@@ -435,12 +592,21 @@ class GUI(QMainWindow):
     def fn_anadir_horarios(self, index):
         # Recoge la asignatura seleccionada en el ComboBox
         asignatura = self.ComboBoxAsignatura.currentText()
+        
         if asignatura != '':
+            
+            horarios = list()
+            horario_asignatura = list()
+            plazas_sesion = 0
+            num_sesiones = 0
+            num_subgrupos = 0
+            semana_inicial = 0
+
             # Abre el fichero en modo lectura
             f = open('horarios.txt', 'r')
             # Lee todo el fichero y lo guarda en la lista
             for asig in f:
-                if asig.strip('\n').split('-')[0] == asignatura:
+                if asig.strip('\n').split('-')[0].lower() == asignatura.lower():
                     # Se recoge los horarios de las asignaturas del fichero
                     # Como la cadena esta en formato string se traduce a formato lista
                     horarios = json.loads(asig.split('-')[1].replace('\'','\"'))
@@ -451,14 +617,16 @@ class GUI(QMainWindow):
             layout = QVBoxLayout(widget)
             self.AreaHorarios.setWidget(widget)
 
-            horario_asignatura = list()
-
             # Abre el fichero en modo lectura
             f = open('asignaturas.txt', 'r')
             # Lee todo el fichero y guarda los horarios de las asignaturas
             for asig in f:
                 if asig.split('-')[0].lower() == asignatura.lower():
+                    plazas_sesion = int(asig.split('-')[1])
+                    num_sesiones = int(asig.split('-')[2])
                     horario_asignatura = json.loads(asig.split('-')[3].replace('\'','\"'))
+                    num_subgrupos = int(asig.split('-')[4])
+                    semana_inicial = int(asig.split('-')[5])
             f.close()
 
             for i, horario in enumerate(horarios):
@@ -469,6 +637,11 @@ class GUI(QMainWindow):
                     if any(horario.split('/')[1] == aux.split('/')[1] for aux in horario_asignatura):
                         checkBox.setCheckState(2)
                     layout.addWidget(checkBox)
+            
+            self.PlazasText.setValue(plazas_sesion)
+            self.NumSesionesText.setValue(num_sesiones)
+            self.NumSubgruposText.setValue(num_subgrupos)
+            self.SemanaInicialText.setValue(semana_inicial)
 
     # Obtiene la ruta del archivo pdf que se quiere cargar
     def fn_buscar_archivos(self):
@@ -587,12 +760,6 @@ def mensaje_alerta(icono, texto):
     alerta = QMessageBox(mensaje_icono[icono], 'Alerta', texto)
     alerta.exec()
 
-# Borra lista de los laboratorios
-def borrar_laboratorios(opcion):
-    if opcion.text() == 'OK':
-        f = open('asignaturas.txt', 'w')
-        f.close()
-
 # Ordena los horarios
 def ordenar_horarios(horarios):
     aux = list()
@@ -638,6 +805,15 @@ def coger_horarios(AreaHorarios, asignatura):
 
     return lista_horarios
 
+# Borra lista de los laboratorios
+def borrar_laboratorios(opcion):
+    global borrar
+
+    if opcion.text() == 'OK':
+        f = open('asignaturas.txt', 'w')
+        f.close()
+        borrar = True
+
 # Inserta los horarios en la tabla de la asignatura asignada
 def inserta_horarios_tabla(tabla_horarios, asignatura):
     # Borra el contenido de la TablaHorarios
@@ -658,10 +834,10 @@ def inserta_horarios_tabla(tabla_horarios, asignatura):
             tabla_horarios.setRowCount(len(horarios))
             for i, horario in enumerate(horarios):
                 # Crea el texto y lo centra
-                texto = QTableWidgetItem(horario)
-                texto.setTextAlignment(Qt.AlignCenter)
+                # texto = QTableWidgetItem(horario)
+                # texto.setTextAlignment(Qt.AlignCenter)
                 # Añade el texto en la tabla
-                tabla_horarios.setItem(0, i, texto)
+                tabla_horarios.setItem(0, i, QTableWidgetItem(horario))
             break
     f.close()
 
@@ -670,40 +846,35 @@ def inserta_grupos(comboBox_grupos, asignatura):
     
     global grupos
 
-    # Asignaturas
-    asignaturas = {
-        # Asignatura : [Mañana, Tarde, Dobles Grados]
-        'Automatica': [[True, True, False, True, False], [True, True, False, True, False], [True, False, False, False, True, True, True]],
-        'Electronica': [[True, True, False, False, False], [True, True, False, False, False], [True, False, False, False, True, True, True]],
-        'Automatizacion': [[False, False, True, False, False], [False, False, True, False, False], [False, True, False, False, False, False, False]],
-        'Electronica de Potencia': [[False, False, True, False, False], [False, False, True, False, False], [False, True, False, False, False, False, False]],
-        'Informatica Industrial': [[False, False, True, False, False], [False, False, True, False, False], [False, True, False, False, False, False, False]],
-        'Instrumentacion electronica': [[False, False, True, False, False], [False, False, True, False, False], [False, True, False, False, False, False, False]],
-        'Robotica': [[False, False, True, False, False], [False, False, True, False, False], [False, False, True, False, False, False, False]],
-        'Electronica Analogica': [[False, False, True, False, False], [False, False, True, False, False], [False, True, False, False, False, False, False]],
-        'Electronica Digital': [[False, False, True, False, False], [False, False, True, False, False], [False, True, False, False, False, False, False]],
-        'Regulacion Automatica': [[False, False, True, False, False], [False, False, True, False, False], [False, True, False, False, False, False, False]],
-        'Control': [[False, False, False, False, True], [False, False, False, False, True], [False, False, True, False, False, False, False]],
-        'SED': [[False, False, False, False, True], [False, False, False, False, True], [False, False, True, False, False, False, False]],
-        'SEI': [[False, False, False, False, True], [False, False, False, False, True], [False, False, False, True, False, False, False]],
-        'SII': [[False, False, False, False, True], [False, False, False, False, True], [False, False, True, False, False, False, False]]
-    }
+    asignaturas = dict()
 
+    # Recorre las asignaturas del archivo de configuracion
+    for asig in lee_grupos.config.options('ASIGNATURAS'):
+        # Inicializa el diccionario
+        asignaturas[asig.replace('_', ' ')] = [[False, False, False, False, False], [False, False, False, False, False], [False, False, False, False, False, False, False]]
+        # Recorre los grupos de cada asignatura
+        for grupo in lee_grupos.config.get('ASIGNATURAS', asig).split(','):
+            for i in range(len(asignaturas[asig.replace('_', ' ')])):
+                for j in range(len(asignaturas[asig.replace('_', ' ')][i])):
+                    # Compara cada grupo de la asignatura con la variable grupos
+                    if grupos[i][j] == grupo:
+                        asignaturas[asig.replace('_', ' ')][i][j] = True
+                        
     # Borra los grupos anteriores
     comboBox_grupos.clear()
 
     # Recorre el vector de la asignatura seleccionada
-    for i in range(len(asignaturas[asignatura])):
-        for j in range(len(asignaturas[asignatura][i])):
+    for i in range(len(asignaturas[asignatura.lower()])):
+        for j in range(len(asignaturas[asignatura.lower()][i])):
             # Si el grupo es True se agrega al comboBox
-            if asignaturas[asignatura][i][j]:
+            if asignaturas[asignatura.lower()][i][j]:
                 comboBox_grupos.addItem(grupos[i][j])
     
     # La interfaz no carga ninguna opcion del comboBox (comienza vacio)
     comboBox_grupos.setCurrentIndex(-1)
 
 # Comprueba que dos asignaturas no sean iguales o esten vacias y si coinciden los horarios
-def comprobarAsignaturas(asignatura_actual, horario_actual, asignatura1, asignatura2):
+def comprobarAsignaturas(asignatura1, asignatura2):
 
     # Comprueba que las dos asignaturas se hayan seleccionado
     if asignatura1 != '' and asignatura2 != '':
@@ -724,13 +895,9 @@ def comprobarAsignaturas(asignatura_actual, horario_actual, asignatura1, asignat
                     horario1 = json.loads(asig.split('-')[3].replace('\'','\"'))
                 elif asignatura2 == asig.split('-')[0]:
                     horario2 = json.loads(asig.split('-')[3].replace('\'','\"'))
-
-            # Si la asignatura actual es alguna de las asignaturas que comparten aula se remplaza los horarios
-            if asignatura1 == asignatura_actual:
-                horario1 = horario_actual
-            elif asignatura2 == asignatura_actual:
-                horario2 = horario_actual 
             
+            f.close()
+
             # Quita los grupos de matricula de los horarios
             horario1 = list(set([horario.split('/')[1] for horario in horario1]))
             horario2 = list(set([horario.split('/')[1] for horario in horario2]))
@@ -740,7 +907,6 @@ def comprobarAsignaturas(asignatura_actual, horario_actual, asignatura1, asignat
                 mensaje_alerta('Err', 'Coinciden los horarios de las asignaturas que comparten las aulas.')
                 return False
 
-            f.close()
     else:
         # Comprueba si alguna de las asignaturas no esta vacia
         if asignatura1 != '' or asignatura2 != '':
