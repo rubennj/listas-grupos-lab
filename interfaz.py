@@ -464,7 +464,7 @@ class GUI(QMainWindow):
                 i = 0
                 while not encontrado and i < len(asignaturas):
                     # Si la asignatura introducida esta repetida se sobreescribe
-                    if asignatura.lower() == asignaturas[i].split('-')[0]:
+                    if asignatura.lower() == asignaturas[i].split('-')[0].lower():
                         # Se recoge los horarios de las asignaturas del fichero
                         # Como la cadena esta en formato string se traduce a formato lista
                         horarios = json.loads(asignaturas[i].split('-')[1].replace('\'','\"'))
@@ -489,7 +489,7 @@ class GUI(QMainWindow):
                 # Si no se encuentra una misma asignatura se añade a las asignaturas ya existentes
                 if not encontrado:
                     # Se traduce la asignatura a tipo string  
-                    texto = asignatura + '-[\'' + (grupo + '/' + dia + hora) + '\']'
+                    texto = asignatura.lower() + '-[\'' + (grupo + '/' + dia + hora) + '\']'
                     asignaturas.append(texto)
 
                 # Abre el fichero en modo escritura
@@ -851,7 +851,7 @@ def inserta_grupos(comboBox_grupos, asignatura):
     # Recorre las asignaturas del archivo de configuracion
     for asig in lee_grupos.config.options('ASIGNATURAS'):
         # Inicializa el diccionario
-        asignaturas[asig.replace('_', ' ')] = [[False, False, False, False, False], [False, False, False, False, False], [False, False, False, False, False, False, False]]
+        asignaturas[asig.replace('_', ' ')] = [[False, False, False, False, False], [False, False, False, False, False], [False, False, False, False, False, False, False, False]]
         # Recorre los grupos de cada asignatura
         for grupo in lee_grupos.config.get('ASIGNATURAS', asig).split(','):
             for i in range(len(asignaturas[asig.replace('_', ' ')])):

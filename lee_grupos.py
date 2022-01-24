@@ -216,12 +216,16 @@ def comprueba_subgrupo_estudiante_semanas(asignatura, subgrupos_ya_asignados, su
     ultimo_subgrupo = list(subgrupos_ya_asignados.keys())[-1]
     sesion_subgrupo_a_asignar = subgrupo_a_asignar.split('-')[0]
 
+    # Recoge todas las asignaturas
+    asignaturas = recoge_asignaturas_txt()
+
     for subgrupo_ya_asignado in subgrupos_ya_asignados:
         # Guarda los subgrupos ya asignados en otras asignaturas
         asignatura_subgrupo_asignado = subgrupos_ya_asignados[subgrupo_ya_asignado].split('_')[1]
+
         # Guarda la semana del subgrupos ya asignado
         semanas_subgrupos_ya_asignados = semanas_subgrupo(
-            asignatura, subgrupo_ya_asignado)
+            asignaturas.loc[asignatura_subgrupo_asignado], subgrupo_ya_asignado)
         # Guarda la semana de los subgrupos a asignar
         semanas_subgrupos_a_asignar = semanas_subgrupo(
             asignatura, subgrupo_a_asignar)
