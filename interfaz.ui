@@ -57,7 +57,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tabDisponibilidad">
      <attribute name="title">
@@ -1428,7 +1428,7 @@
        </rect>
       </property>
       <property name="text">
-       <string> Aceptar</string>
+       <string> Horario</string>
       </property>
      </widget>
      <widget class="QLabel" name="lblHorarios">

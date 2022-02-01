@@ -117,8 +117,8 @@ class GUI(QMainWindow):
         self.BtnGuardarAulas.setIconSize(QSize(10, 10))
         self.BtnGuardarAulas.setToolTip('Guardar las aulas compartidas')
         self.BtnGuardarAulas.clicked.connect(self.fn_guardar_aulas)
-        self.BtnAceptarAlumno.setIcon(QtGui.QIcon('./img/aceptar.png'))
-        self.BtnAceptarAlumno.setIconSize(QSize(11, 11))
+        self.BtnAceptarAlumno.setIcon(QtGui.QIcon('./img/horario.png'))
+        self.BtnAceptarAlumno.setIconSize(QSize(14, 14))
         self.BtnAceptarAlumno.setToolTip('Generar el horario del alumno')
         self.BtnAceptarAlumno.clicked.connect(self.fn_carga_calendario)
         self.BtnCalendarioAlumno.setIcon(QtGui.QIcon('./img/htmlAct.png'))
@@ -131,6 +131,7 @@ class GUI(QMainWindow):
         self.BtnCalendarioProfesor.clicked.connect(self.fn_calendario_anual_profesor)
         # Evento de las pestañas
         self.tabWidget.currentChanged.connect(self.fn_reinicia_pestanas)
+        self.lblSeleccionFormato.setStyleSheet("color: gray")
         # Eventos TreeView
         self.ArbolAsignaturas.doubleClicked.connect(self.fn_selecciona_asignatura)
         # Eventos ComboBox
@@ -165,7 +166,7 @@ class GUI(QMainWindow):
                         '- Botón "Guardar Aulas": almacena las aulas escogidas.\n'+
                         '- Botón "Borrar Aulas": elimina las aulas seleccionadas.\n'+
                         '- Botón "Borrar Laboratorios": elimina los laboratorios elegidos en "Horarios".\n'+
-                        '- Visualizador Aulas: muestra las aulas que han sido guardadas.\n'+
+                        '- Visualizador "Comparten Aulas": muestra las aulas que han sido guardadas.\n'+
                         '- Visualizador "Horarios": muestra los horarios disponibles de la materia seleccionada y permite elegir los grupos de práticas.')
 
     # Carga una alerta en el botón de ayuda de la pestaña de Asignación
@@ -180,8 +181,8 @@ class GUI(QMainWindow):
     def fn_ayuda_calendario(self):
         mensaje_alerta('Que', 'En esta pestaña se crea el calendario de prácticas de un alumno. Incluye el horario y las semanas que tiene que asistir a los laboratorios\n'+
                         '- Campo Nº matrícula: sirve para introducir el número de matrícula del alumno.\n'+
-                        '- Botón "Aceptar": almacena el número de matrícula.\n'+
-                        '- Botón "Exportar a PDF": genera un PDF con el horario del estudiante.')
+                        '- Botón "Horario": completa la tabla con el horario semanal de un alumno.\n'+
+                        '- Botón "Cal. Anual": genera un HTML con el calendario anual del estudiante o del profesor.')
     
     # Carga un mensaje al pulsar el botón Acerca De
     def fn_acerca_de(self):
@@ -207,6 +208,7 @@ class GUI(QMainWindow):
         if cod_error == 0:
             self.BtnCrearHTML.setEnabled(True)
             self.lblSeleccionFormato.setEnabled(True)
+            self.lblSeleccionFormato.setStyleSheet("color: white")
             self.radioBtnMatricula.setEnabled(True)
             self.radioBtnNombre.setEnabled(True)
             self.BtnCrearHTML.setEnabled(True)
@@ -521,7 +523,8 @@ class GUI(QMainWindow):
 
                 # Inserta los horarios en la tabla
                 inserta_horarios_tabla(self.TablaHorarios, asignatura)
-
+                
+                mensaje_alerta('Inf', 'Se ha borrado corectamente.')
             else:
                 mensaje_alerta('War', 'No se ha seleccionado ningún horario.')
 
