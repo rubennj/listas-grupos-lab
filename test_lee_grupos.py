@@ -19,7 +19,7 @@ import lee_grupos
 fin = False
 
 while not fin:
-    opcion = input('1: Mostrar excel tamaño subgrupos\n2: Mostrar excel no asignados\n3: Ejecutar asignar_grupos\n4: Escoge un estudiante\n5: Generar HTML\n6: Fin de programa\n')
+    opcion = input('1: Mostrar excel tamaño subgrupos\n2: Mostrar excel no asignados\n3: Ejecutar asignar_grupos\n4: Escoge un estudiante\n5: Generar HTML\n6: Calendario Alumno\n7: Calendario Profesor\n8: Fin de programa\n')
 
     # Muestra los alumnos asignados a cada subgrupo de cada asignatura
     if opcion == '1':
@@ -66,20 +66,43 @@ while not fin:
         matricula = input('Dime un Nº de Matricula:')
 
         # Muestra por pantalla las asignaturas y el horario del alumno
-        try:
+        if matricula in lista_subgrupos.index:
             for col in lista_subgrupos.columns:
                 if 'subgrupo' in col:
                     dia = lista_subgrupos.loc[matricula][col]
                     if pd.notna(dia):
                         print(dia[:2], dia[2:4], col.split('_')[1])
-        except KeyError:
+        else:
             print('Se ha introducido mal el Nº de Matricula')
         print()
     elif opcion == '5':
-        # Crea los html a partir del archivo lista_subgrupos
-        lee_grupos.crea_html_grupos_laboratorios(False)
+
+        pon_nombre = input('Generar HTML con nombres (y) o generarlos con los numero de matricula (n): ')
+
+        # Crea los html a partir del archivo lista_subgrupos, por defecto se genera con los nombres de los estudiantes
+        lee_grupos.crea_html_grupos_laboratorios(pon_nombre != 'n')
         print()
     elif opcion == '6':
+        # Recoge el numero de matricula deseado
+        matricula = input('Dime un Nº de Matricula: ')
+
+        # Crea un calendario anual de un alumno
+        codigo_error, error = lee_grupos.crea_calendario_anual_alumno(matricula)
+        
+        if codigo_error != 0:
+            print(error)
+        print()        
+    elif opcion == '7':
+        # Recoge el identificador deseado
+        identificador = input('Dime el identificador del profesor: ')
+
+        # Crea un calendario anual de un profesor
+        codigo_error, error = lee_grupos.crea_calendario_anual_profesor(identificador)
+        
+        if codigo_error != 0:
+            print(error)
+        print()
+    elif opcion == '8':
         fin = True
     else:
         print(opcion, 'opcion incorrecta.')

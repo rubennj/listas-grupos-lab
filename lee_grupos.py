@@ -14,10 +14,12 @@ from itertools import product
 import pandas as pd
 from pathlib import Path
 import json
-import unidecode
+from unidecode import unidecode
 import configparser
 import math
 import datetime
+import calendar
+import io
 
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
@@ -31,13 +33,14 @@ logging.basicConfig(level='INFO', handlers=[
 config = configparser.ConfigParser()
 config.read('configuracion.ini', encoding='utf-8')
 
-# Pruebas
-SEMILLA_RND = 123
 # Path de los archivos
 PATH_LISTAS = Path(config.get('RUTAS', 'LISTAS'))
 PATH_EXCEL = Path(config.get('RUTAS', 'EXCEL'))
 PATH_HTML = Path(config.get('RUTAS', 'HTML'))
 PATH_EXCELS = Path(config.get('RUTAS', 'EXCELS'))
+PATH_ALUMNOS = Path(config.get('RUTAS', 'CALENDARIOS_ALUMNOS'))
+PATH_PROFESORES = Path(config.get('RUTAS', 'CALENDARIOS_PROFESORES'))
+PATH_CSS = Path(config.get('RUTAS', 'CSS'))
 
 # Variables globales
 l = list()
@@ -52,22 +55,40 @@ grupos_grado = pd.DataFrame(index=['DM306', 'Q308', 'D307', 'M301', 'A207', 'E20
                                 'prioridad_reparto' : [4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1],
                                 })
 
+# Nombre de los ficheros Excel que se introducen con los alumnos
+excel_asignaturas = {
+    'Automatica' : 'automatica',
+    'Electronica' : 'electronica',
+    'Automatizacion' : 'automatizacion',
+    'Electronica de Potencia' : 'potencia',
+    'Informatica Industrial' : 'infind',
+    'Instrumentacion Electronica' : 'instrumentacion',
+    'Robotica' : 'robotica',
+    'Electronica Analogica' : 'analogica',
+    'Electronica Digital' : 'digital',
+    'Regulacion Automatica' : 'regulacion',
+    'Control' : 'control',
+    'SED' : 'sed',
+    'SEI' : 'sei',
+    'SII' : 'sii',
+}
+
 # Nombre de las asignaturas simplificados
 nombre_asignaturas = {
-    'automatica' : 'automatica',
-    'electronica' : 'electronica',
-    'automatizacion' : 'automatizacion',
-    'electronica de potencia' : 'potencia',
-    'informatica industrial' : 'infind',
-    'instrumentacion electronica' : 'instrumentacion',
-    'robotica' : 'robotica',
-    'electronica analogica' : 'analogica',
-    'electronica digital' : 'digital',
-    'regulacion automatica' : 'regulacion',
-    'control' : 'control',
-    'sed' : 'sed',
-    'sei' : 'sei',
-    'sii' : 'sii',
+    'Automatica' : 'Automática',
+    'Electronica' : 'Electrónica',
+    'Automatizacion' : 'Automatización',
+    'Electronica de Potencia' : 'Electrónica de Potencia',
+    'Informatica Industrial' : 'Informática Industrial',
+    'Instrumentacion Electronica' : 'Instrumentación Electrónica',
+    'Robotica' : 'Robótica',
+    'Electronica Analogica' : 'Electrónica Analógica',
+    'Electronica Digital' : 'Electrónica Digital',
+    'Regulacion Automatica' : 'Regulacion automatica',
+    'Control' : 'Control',
+    'SED' : 'SED',
+    'SEI' : 'SEI',
+    'SII' : 'SII',
 }
 
 # Devuelve las asignaturas recogidas en un txt
@@ -76,7 +97,7 @@ def recoge_asignaturas_txt():
     global grupos_grado
 
     data = {config.get('EXCEL', 'PLAZAS_SESION') : [],
-            config.get('EXCEL', config.get('EXCEL', 'NUM_SESIONES')) : [],
+            config.get('EXCEL', 'NUM_SESIONES') : [],
             config.get('EXCEL', 'HORARIO_SESIONES') : [],
             config.get('EXCEL', 'NUM_SUBGRUPOS') : [],
             config.get('EXCEL', 'SEMANA_INICIAL') : [],
@@ -98,7 +119,7 @@ def recoge_asignaturas_txt():
         horarios = json.loads(datos[3].replace('\'', '\"'))
         grupos_horarios.append(horarios)
         data[config.get('EXCEL', 'PLAZAS_SESION')].append(int(datos[1]))
-        data[config.get('EXCEL', config.get('EXCEL', 'NUM_SESIONES'))].append(int(datos[2]))
+        data[config.get('EXCEL', 'NUM_SESIONES')].append(int(datos[2]))
         # Con este for se recogen solo los horarios
         data[config.get('EXCEL', 'HORARIO_SESIONES')].append(list(set([horario.split('/')[1] for horario in horarios])))
         data[config.get('EXCEL', 'NUM_SUBGRUPOS')].append(int(datos[4]))
@@ -124,7 +145,7 @@ def semanas_subgrupo(asignatura, subgrupo):
     # Recoge la letra del subgrupo A = 0, B = 1, C = 2 ...
     offset_subgrupo = ord(subgrupo[-1]) - 65
     # Recoge el numero de las sesiones
-    num_sesiones = asignatura[config.get('EXCEL', config.get('EXCEL', 'NUM_SESIONES'))]
+    num_sesiones = asignatura[config.get('EXCEL', 'NUM_SESIONES')]
     # Recoge el numero de cuantos subgrupos hay de la asignatura
     num_subgrupos = asignatura[config.get('EXCEL', 'NUM_SUBGRUPOS')]
 
@@ -140,7 +161,7 @@ def semanas_subgrupo(asignatura, subgrupo):
 # Lee los excel de cada asignatura y sus grupos y devuelve los estudiantes con las limitaciones y prioridades de reparto
 def lee_estudiantes_asignatura(asignatura):
 
-    global grupos_grado, nombre_asignaturas, cod_error
+    global grupos_grado, excel_asignaturas, cod_error
 
     lista_todos_grupos_grado = []
     estudiantes_asignatura = pd.DataFrame()
@@ -149,7 +170,7 @@ def lee_estudiantes_asignatura(asignatura):
     try:
         # Abre los excel con los alumnos matriculados en cada grupo
         lista_grado = pd.read_excel(
-            PATH_LISTAS / f'{nombre_asignaturas[asignatura.name]}.xlsx', dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})# [:-1]
+            PATH_LISTAS / f'{excel_asignaturas[asignatura.name]}.xlsx', dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})# [:-1]
         lista_grado.set_index(config.get('EXCEL', 'NUM_EXPEDIENTE').replace('Â', ''), inplace=True)
 
         # Nombre de la columna del Laboratorio Anterior
@@ -299,6 +320,7 @@ def asignar_subgrupos_estudiantes(lista_estudiantes_subgrupos, asignatura, lista
                         lista_estudiantes_asignatura.at[idx_estudiante,
                             f'subgrupo_{asignatura.name}'] = subgrupo_a_asignar
                         break
+                    # Comprueba si solo queda un estudiante de ese grupo
                     elif len(estudiantes_sin_asignar[estudiantes_sin_asignar[config.get('EXCEL', 'GRUPO_MATRICULA')] == estudiante[config.get('EXCEL', 'GRUPO_MATRICULA')]]) == 1:
                         # Se añade el estudiante si no es del doble grado
                         # O si es del doble grado se añade si el horario no coincide con los demás grupos (MA09 in [JU09, JU11])
@@ -532,12 +554,17 @@ def asignar_grupos():
                 logging.error(lista_alumnos_sin_asignar)
                 break
 
+    # Si la lista de estudiantes esta vacia salta un error
+    if lista_estudiantes_subgrupos.empty:
+        cod_error = 5
+        error = f'No se ha introducido los Excels para realizar el reparto.'
+
     return cod_error, error
 
 # Guarda la lista en el excel
 def guardar_lista_grupos():
 
-    global lista_estudiantes_subgrupos, nombre_asignaturas, cod_error
+    global lista_estudiantes_subgrupos, excel_asignaturas, cod_error
 
     # Recoge las asignaturas del txt
     asignaturas = recoge_asignaturas_txt()
@@ -553,7 +580,7 @@ def guardar_lista_grupos():
         # Une todos los estudiantes de los archivos excel
         for archivo in archivos:
             # Compara los nombres de los excels con las asignaturas
-            if any(nombre_asignaturas[asignatura] in str(archivo) for asignatura in list(asignaturas.index)):
+            if any(excel_asignaturas[asignatura] in str(archivo) for asignatura in list(asignaturas.index)):
                 lista_datos_grupo = pd.read_excel(archivo, dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})
                 lista_datos_grupo.set_index(config.get('EXCEL', 'NUM_EXPEDIENTE'), inplace=True)
                 # Se agregan las columnas que se quieren visualizar en el excel
@@ -566,6 +593,7 @@ def guardar_lista_grupos():
         lista_junta = pd.merge(lista_estudiantes_datos, lista_estudiantes_subgrupos, left_index=True, right_index=True)
         lista_junta.to_excel(PATH_EXCEL / config.get('ARCHIVOS', 'LISTA_EXCEL'))
 
+        # Recorre las columnas de las asignaturas para crear un excel por cada asignatura
         for col in lista_junta.columns:
             if col.split('_')[0] == 'subgrupo':
                 lista_junta[[config.get('EXCEL', 'APELLIDOS'), config.get('EXCEL', 'NOMBRE'), col]][lista_junta[col].notna()].to_excel(PATH_EXCELS / str(col.split('_')[1] + '_' + datetime.datetime.now().strftime('%d%m%Y') + '.xlsx'))
@@ -574,7 +602,7 @@ def guardar_lista_grupos():
         cod_error = 3
         error = f'El Excel {e.filename} esta abierto, si quiere realizar la operación debe cerrarlo.'
     
-    return cod_error, error, str(PATH_EXCEL.absolute()), str(PATH_EXCELS.absolute())
+    return cod_error, error
 
 # Traduce los meses del ingles al español
 def traduce_meses(dia_mes):
@@ -607,20 +635,18 @@ def crea_html_grupos_laboratorios(pon_nombre):
 
     # Abre el excel con las listas de los subgrupos
     lista_datos_grupo = pd.read_excel(config.get('ARCHIVOS', 'LISTA_EXCEL'), dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})
-    if lista_datos_grupo.empty:
-        return 5, f'{config.get("ARCHIVOS", "LISTA_EXCEL")} esta vacio.', ''
     lista_datos_grupo.set_index(config.get('EXCEL', 'NUM_EXPEDIENTE'), inplace=True)
 
-    # Abre el excel con las semanas de inicio
+    # Abre el excel con las semanas
     semanas = pd.read_excel(config.get('ARCHIVOS', 'SEMANAS'), index_col=0)
 
     asignaturas = list()
     estudiantes = pd.DataFrame()
     
-    # Recoge las asignaturas del txt
+    # Recoge las asignaturas del excel
     for col in lista_datos_grupo.columns:
         if 'subgrupo' in col:
-            asignaturas.append(col.split('_')[1].lower())
+            asignaturas.append(col.split('_')[1])
 
     # Recorre las asignaturas
     for asignatura in asignaturas:
@@ -629,7 +655,7 @@ def crea_html_grupos_laboratorios(pon_nombre):
         f = open('asignaturas.txt', 'r')
         # Lee todo el fichero y guarda los datos de las asignaturas
         for asig in f:
-            if asig.split('-')[0].lower() == asignatura.lower():
+            if asig.split('-')[0] == asignatura:
                 num_sesiones   = int(asig.split('-')[2])
                 horarios       = json.loads(asig.split('-')[3].replace('\'', '\"'))
                 num_subgrupos  = int(asig.split('-')[4])
@@ -667,23 +693,13 @@ def crea_html_grupos_laboratorios(pon_nombre):
         """
 
         # Añade un titulo con el nombre de la asignatura
-        html += f'<h1> {asignatura.upper()} </h1>'
+        html += f'<h1> {nombre_asignaturas[asignatura].upper()} </h1>'
 
         # Recoge los subgrupos y su tamaño de la asignatura
         subgrupos = lista_datos_grupo[lista_datos_grupo[f'subgrupo_{asignatura}'] != '-'].groupby(f'subgrupo_{asignatura}').size()
 
-        # Recoge el primer subgrupo y añade un encabezado a la tabla
-        horario_anterior = list(subgrupos.index)[0].split('-')[0]        
-        html_horarios = ''
-        
-        # Recorre los horarios para guardar los grupos que se han asignado
-        for horario in horarios:
-            if horario_anterior in horario:
-                html_horarios += horario.split('/')[0] + ' '
-        
-        # Crea un titulo con los grupos y su horario
-        html += f'<h2> GRUPO {html_horarios} </h2>'
-        html += f'<h2 class="dia_hora">{dias[horario_anterior[:2]]} {horas[horario_anterior[2:]]}</h2><div>'
+        # Para recoger el primer grupo se inicializa vacio
+        horario_anterior = list()
 
         # Recorre los subgrupos para introducir en el html la tabla de cada uno
         for subgrupo, _ in subgrupos.items():
@@ -691,8 +707,8 @@ def crea_html_grupos_laboratorios(pon_nombre):
             # Recoge el horario del subgrupo actual
             horario_actual = subgrupo.split('-')[0]
             
-            # Si el horario ha cambiado entra
-            if horario_actual != horario_anterior:
+            # Si el horario anterior esta vacio o el horario ha cambiado entra
+            if not horario_anterior or horario_actual != horario_anterior:
                 # Cambia el horario anterior por el actual
                 horario_anterior = horario_actual
                 html_horarios = ''
@@ -722,21 +738,33 @@ def crea_html_grupos_laboratorios(pon_nombre):
             if pon_nombre:
                 # Recorre los estudiantes para añadirlos a la tabla
                 for _, estudiante in estudiantes.iterrows():
-                    html += f'<tr><td class="tabla">{unidecode.unidecode(estudiante[config.get("EXCEL", "APELLIDOS")] + ", " + estudiante[config.get("EXCEL", "NOMBRE")])}</td></tr>'
+                    html += f'<tr><td class="tabla">{unidecode(estudiante[config.get("EXCEL", "APELLIDOS")] + ", " + estudiante[config.get("EXCEL", "NOMBRE")])}</td></tr>'
             else:
                 # Recorre los estudiantes para añadir su numero de matricula a la tabla
                 for matricula, _ in estudiantes.iterrows():
                     html += f'<tr><td class="tabla">{matricula}</td></tr>'
 
-            # Recoge las semanas del horario actual
-            dias_h = list(semanas[dias[horario_actual[:2]]])
-            texto = ''
             
-            # Recorre el numero de sesiones
-            for i in range(num_sesiones):
-                # Añade los dias en los que se va a impartir las clases
-                # Traduce los meses y se realiza una abreviacion de 3 letras
-                texto += '   ' + traduce_meses(dias_h[semana_inicial + (ord(subgrupo[-1]) - ord('A') + num_subgrupos * i) - 1].strftime('%d %B'))[:6]
+            texto = ''
+            dias_h = list()
+            asignaturas_cuatrimestre = list()
+
+            # Recorre los dos cuatrimestres
+            for i in range(2):
+                # El primer cuatrimestre será el impar
+                if i == 0:
+                    dias_h = list(semanas[dias[horario_actual[:2]]])[:int(config.get('SEMANAS', 'NUM_SEMANAS'))]
+                    asignaturas_cuatrimestre = config.get('CUATRIMESTRE', 'IMPAR').split(',')
+                else:
+                    dias_h = list(semanas[dias[horario_actual[:2]]])[int(config.get('SEMANAS', 'NUM_SEMANAS')):]
+                    asignaturas_cuatrimestre = config.get('CUATRIMESTRE', 'PAR').split(',')
+                
+                if asignatura in asignaturas_cuatrimestre:
+                    # Recorre el numero de sesiones
+                    for i in range(num_sesiones):
+                        # Añade los dias en los que se va a impartir las clases
+                        # Traduce los meses y se realiza una abreviacion de 3 letras
+                        texto += '   ' + traduce_meses(dias_h[semana_inicial + (ord(subgrupo[-1]) - ord('A') + num_subgrupos * i) - 1].strftime('%d %B'))[:6]
             
             # Añade los horarios a la tabla
             html += f'<tr><td><br>{texto}</td></tr></table>'
@@ -745,9 +773,319 @@ def crea_html_grupos_laboratorios(pon_nombre):
         html += '</body></html>'
 
         # Abre el fichero en modo escritura
-        f = open(PATH_HTML / f'{asignatura}.html', 'w')
+        f = io.open(PATH_HTML / f'{asignatura}.html', 'w', encoding='utf8')
         # Añade el código html al fichero
         f.write(html)
         f.close()
     
-    return cod_error, error, str(PATH_HTML.absolute())
+    return cod_error, error
+
+# Crea un calendario anual de los horarios en HTML
+def crea_calendario_anual_alumno(num_matricula):
+    
+    global cod_error
+    error = ''
+
+    # Abre el excel con las listas de los subgrupos
+    lista_subgrupos = pd.read_excel(config.get('ARCHIVOS', 'LISTA_EXCEL'), dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})
+    lista_subgrupos.set_index(config.get('EXCEL', 'NUM_EXPEDIENTE'), inplace=True)
+
+    # Inicializa el calendario
+    cal = calendar.HTMLCalendar(firstweekday = 0)
+
+    if num_matricula in lista_subgrupos.index:
+        # Recoge las asignaturas
+        asignaturas = recoge_asignaturas_txt()
+
+        # Recoge al alumno de la lista
+        alumno = lista_subgrupos.loc[num_matricula]
+            
+        # Abre el excel con las semanas de inicio
+        semanas = pd.read_excel(config.get('ARCHIVOS', 'SEMANAS'), index_col=0)
+
+        dias = {'LU' : 'LUNES', 'MA' : 'MARTES', 'MI' : 'MIERCOLES', 'JU' : 'JUEVES', 'VI' : 'VIERNES'}
+        dias_de_la_semana = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+        horas = {'09' : '9:30', '11' : '11:30', '15' : '15:30', '17' : '17:30'}
+        # Meses que se van a representar
+        meses = [9, 10, 11, 12, 2, 3, 4, 5]
+        # Recoge el año de inicio del curso
+        año = int(semanas.iloc[1, 1].strftime('%Y'))
+
+        # Recoge las asignaturas del alumno
+        asignaturas_alumnos = []
+        for col in alumno.index:
+            if 'subgrupo' in col:
+                asignaturas_alumnos.append(col)
+
+
+        dias_asignaturas = dict()
+
+        # Recorre las asignaturas del alumno
+        for nom_asignatura in asignaturas_alumnos:
+            # Comprueba que exista el subgrupo para esta asignatura
+            if not pd.isnull(alumno[nom_asignatura]):
+                subgrupo = alumno[nom_asignatura]
+                semanas_asignatura = list()
+
+                # Recoge las semanas de la asignatura, especificando el cuatrimestre
+                if nom_asignatura.split('_')[1] in config.get('CUATRIMESTRE', 'IMPAR').split(','):
+                    semanas_asignatura = list(semanas[dias[subgrupo.split('-')[0][:2]]])[:int(config.get('SEMANAS', 'NUM_SEMANAS')) + 1]
+                elif nom_asignatura.split('_')[1] in config.get('CUATRIMESTRE', 'PAR').split(','):
+                    semanas_asignatura = list(semanas[dias[subgrupo.split('-')[0][:2]]])[int(config.get('SEMANAS', 'NUM_SEMANAS')) + 1:]
+
+                dias_asignaturas[nom_asignatura] = list()
+                
+                asignatura = asignaturas.loc[nom_asignatura.split('_')[1]]
+                semana_inicial = asignatura[config.get('EXCEL', 'SEMANA_INICIAL')]
+                num_subgrupos = asignatura[config.get('EXCEL', 'NUM_SUBGRUPOS')]
+                num_sesiones = asignatura[config.get('EXCEL', 'NUM_SESIONES')]
+
+                # Recorre el numero de sesiones
+                for i in range(num_sesiones):
+                        # Guarda en cada asignatura el dia y el mes donde se impartiran los laboratorios
+                    dias_asignaturas[nom_asignatura].append(semanas_asignatura[semana_inicial + (ord(subgrupo[-1]) - ord('A') + num_subgrupos * i) - 1].strftime('%d %m').split(' '))
+
+        # Crea el calendario en tres columnas del año entero
+        html_code = '<!DOCTYPE html><html><head><meta charset="utf-8"/>'
+        html_code += f'<link rel="stylesheet" type="text/css" href="{PATH_CSS.absolute() / "calendar.css"}"/>'
+        html_code += '</head><body>'
+        html_code += f'<h1 class="nombre">{alumno[config.get("EXCEL", "NOMBRE")].upper()} {alumno[config.get("EXCEL", "APELLIDOS")].upper()}</h1>'
+        html_code += '<table border="0" cellpadding="0" cellspacing="0" id="calendar">'
+
+        # Recorre los dos años
+        for i in range(2):
+            
+            html_code += '<tr class="month-row">'
+            
+            # Si es el primer año seran los meses 9, 10, 11, 12
+            if i == 0:
+                lista_meses = meses[:4]
+            # Si es el segundo año seran los meses 2, 3, 4, 5
+            else:
+                lista_meses = meses[4:]
+
+            # Recorre los meses
+            for mes in lista_meses:
+                html_code += '<td class="calendar-month">'
+                # Devuelve en formato html el mes del año especificado
+                html_mes = cal.formatmonth(año + i, mes)
+                
+                # Recorre las asignaturas
+                for asignatura, lista_dia_mes in dias_asignaturas.items():
+                    # Recorre los dias de laboratorio de cada asignatura
+                    for dia_asignatura, mes_asignatura in lista_dia_mes:
+                        # Si coincide que una asignatura imparte el laboratorio este mes
+                        if mes == int(mes_asignatura):
+                            dia_de_la_semana = calendar.weekday(año + i, mes, int(dia_asignatura))
+                            # Si todavia no hay un laboratorio ese mismo dia se le pinta el background del color especifico de cada asignatura
+                            if html_mes.find(f'class="{dias_de_la_semana[dia_de_la_semana]}">{int(dia_asignatura)}<') != -1:
+                                html_mes = html_mes.replace(f'">{int(dia_asignatura)}<', f' {asignatura.split("_")[1].replace(" ", "_").lower()}"><b>{int(dia_asignatura)}</b><')
+                            # Si ya hay un laboratorio ese dia se añadira un borde con el color de la asignatura
+                            else:
+                                html_mes = html_mes.replace(f'"><b>{int(dia_asignatura)}</b><', f' {asignatura.split("_")[1].replace(" ", "_").lower() + "-borde"}"><b>{int(dia_asignatura)}</b><')
+
+                html_code += html_mes
+
+                html_code += '</td>'
+            
+            html_code += '</tr>'
+
+        html_code += '</table>'
+
+        # Recorre las asignaturas para crear la leyenda
+        for nom_asignatura in dias_asignaturas:
+            asignatura = nom_asignatura.split('_')[1]
+            subgrupo = alumno[nom_asignatura].split('-')[0]
+
+            # Crea una caja con el color de la asignatura
+            html_code += f'<div class="leyenda"><div class="caja-leyenda {asignatura.replace(" ", "_").lower()}"></div><div class="texto-leyenda"><h2>{nombre_asignaturas[asignatura]}</h2><h3>'
+            html_code += f'{dias[subgrupo[:2]]} {horas[subgrupo[2:]]} Grupo {alumno[nom_asignatura].split("-")[1]}</h3></div></div><br>'
+
+        html_code += '</body></html>'
+
+        # Traduce los dias de la semana
+        html_code = html_code.replace('Mon', 'L')
+        html_code = html_code.replace('Tue', 'M')
+        html_code = html_code.replace('Wed', 'X')
+        html_code = html_code.replace('Thu', 'J')
+        html_code = html_code.replace('Fri', 'V')
+        html_code = html_code.replace('Sat', 'S')
+        html_code = html_code.replace('Sun', 'D')
+        
+        # Traduce los meses
+        html_code = html_code.replace('September', 'Septiembre')
+        html_code = html_code.replace('October', 'Octubre')
+        html_code = html_code.replace('November', 'Noviembre')
+        html_code = html_code.replace('December', 'Diciembre')
+        html_code = html_code.replace('February', 'Febrero')
+        html_code = html_code.replace('March', 'Marzo')
+        html_code = html_code.replace('April', 'Abril')
+        html_code = html_code.replace('May', 'Mayo')
+
+        # Crea el fichero HTML del calendario
+        html = io.open(PATH_ALUMNOS / f'calendario_{num_matricula}.html', 'w', encoding='utf8')
+        # Escribe el codigo HTML al fichero
+        html.write(''.join(html_code))
+        html.close()
+    else:
+        cod_error = 6
+        error = 'Se ha introducido mal el número matrícula del alumno.'
+    
+    return cod_error, error
+
+
+# Crea un calendario anual de los horarios en HTML
+def crea_calendario_anual_profesor(identificador):
+    
+    global cod_error
+    error = ''
+
+    # Abre el excel con las listas de los subgrupos
+    lista_subgrupos = pd.read_excel(config.get('ARCHIVOS', 'PROFESORES'), dtype={config.get('EXCEL', 'IDENTIFICADOR'):str})
+    lista_subgrupos.set_index(config.get('EXCEL', 'IDENTIFICADOR'), inplace=True)
+
+    # Inicializa el calendario
+    cal = calendar.HTMLCalendar(firstweekday = 0)
+
+    if identificador in lista_subgrupos.index:
+        # Recoge las asignaturas
+        asignaturas = recoge_asignaturas_txt()
+
+        # Recoge al profesor de la lista
+        profesor = lista_subgrupos.loc[identificador]
+
+        # Abre el excel con las semanas de inicio
+        semanas = pd.read_excel(config.get('ARCHIVOS', 'SEMANAS'), index_col=0)
+
+        dias = {'LU' : 'LUNES', 'MA' : 'MARTES', 'MI' : 'MIERCOLES', 'JU' : 'JUEVES', 'VI' : 'VIERNES'}
+        dias_de_la_semana = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+        horas = {'09' : '9:30', '11' : '11:30', '15' : '15:30', '17' : '17:30'}
+        # Meses que se van a representar
+        meses = [9, 10, 11, 12, 2, 3, 4, 5]
+        # Recoge el año de inicio del curso
+        año = int(semanas.iloc[1, 1].strftime('%Y'))
+
+        # Recoge las asignaturas del profesor
+        asignaturas_profesor = list()
+        for col in profesor.index:
+            if 'subgrupo' in col:
+                asignaturas_profesor.append(col)
+
+        dias_asignaturas = dict()
+
+        # Recorre las asignaturas del profesor
+        for nom_asignatura in asignaturas_profesor:
+            # Comprueba que exista un subgrupo para esta asignatura
+            if not pd.isnull(profesor[nom_asignatura]):
+                # Recoge los subgrupos de la asignatura
+                subgrupos = profesor[nom_asignatura].split(',')
+
+                # Recorre los subgrupos
+                for subgrupo in subgrupos:
+                    semanas_asignatura = list()
+                    
+                    # Recoge las semanas de la asignatura, especificando el cuatrimestre
+                    if nom_asignatura.split('_')[1] in config.get('CUATRIMESTRE', 'IMPAR').split(','):
+                        semanas_asignatura = list(semanas[dias[subgrupo.split('-')[0][:2]]])[:int(config.get('SEMANAS', 'NUM_SEMANAS')) + 1]
+                    elif nom_asignatura.split('_')[1] in config.get('CUATRIMESTRE', 'PAR').split(','):
+                        semanas_asignatura = list(semanas[dias[subgrupo.split('-')[0][:2]]])[int(config.get('SEMANAS', 'NUM_SEMANAS')) + 1:]
+                    
+                    # Sino existe la asignatura dentro de dias_asignaturas se crea
+                    if not nom_asignatura in dias_asignaturas.keys(): 
+                        dias_asignaturas[nom_asignatura] = list()
+
+                    asignatura = asignaturas.loc[nom_asignatura.split('_')[1]]
+                    semana_inicial = asignatura[config.get('EXCEL', 'SEMANA_INICIAL')]
+                    num_subgrupos = asignatura[config.get('EXCEL', 'NUM_SUBGRUPOS')]
+                    num_sesiones = asignatura[config.get('EXCEL', 'NUM_SESIONES')]
+
+                    # Recorre el numero de sesiones
+                    for i in range(num_sesiones):
+                        # Guarda en cada asignatura el dia y el mes donde se impartiran los laboratorios
+                        dias_asignaturas[nom_asignatura].append(semanas_asignatura[semana_inicial + (ord(subgrupo[-1]) - ord('A') + num_subgrupos * i) - 1].strftime('%d %m').split(' '))
+
+        # Inicializa el calendario el calendario
+        html_code = '<!DOCTYPE html><html><head><meta charset="utf-8"/>'
+        html_code += f'<link rel="stylesheet" type="text/css" href="{PATH_CSS.absolute() / "calendar.css"}"/>'
+        html_code += '</head><body>'
+        html_code += f'<h1 class="nombre"> {profesor[config.get("EXCEL", "NOMBRE")].upper()} {profesor[config.get("EXCEL", "APELLIDOS")].upper()}</h1>'
+        html_code += '<table border="0" cellpadding="0" cellspacing="0" id="calendar">'
+
+        # Recorre los dos años
+        for i in range(2):
+            
+            html_code += '<tr class="month-row">'
+            
+            # Si es el primer año seran los meses 9, 10, 11, 12
+            if i == 0:
+                lista_meses = meses[:4]
+            # Si es el segundo año seran los meses 2, 3, 4, 5
+            else:
+                lista_meses = meses[4:]
+
+            # Recorre los meses
+            for mes in lista_meses:
+                html_code += '<td class="calendar-month">'
+                # Devuelve en formato html el mes del año especificado
+                html_mes = cal.formatmonth(año + i, mes)
+                
+                # Recorre las asignaturas
+                for asignatura, lista_dia_mes in dias_asignaturas.items():
+                    # Recorre los dias de laboratorio de cada asignatura
+                    for dia_asignatura, mes_asignatura in lista_dia_mes:
+                        # Si coincide que una asignatura imparte el laboratorio este mes
+                        if mes == int(mes_asignatura):
+                            dia_de_la_semana = calendar.weekday(año + i, mes, int(dia_asignatura))
+                            # Si todavia no hay un laboratorio ese mismo dia se le pinta el background del color especifico de cada asignatura
+                            if html_mes.find(f'class="{dias_de_la_semana[dia_de_la_semana]}">{int(dia_asignatura)}<') != -1:
+                                html_mes = html_mes.replace(f'">{int(dia_asignatura)}<', f' {asignatura.split("_")[1].replace(" ", "_").lower()}"><b>{int(dia_asignatura)}</b><')
+                            # Si ya hay un laboratorio ese dia se añadira un borde con el color de la asignatura
+                            else:
+                                html_mes = html_mes.replace(f'"><b>{int(dia_asignatura)}</b><', f' {asignatura.split("_")[1].replace(" ", "_").lower() + "-borde"}"><b>{int(dia_asignatura)}</b><')
+                
+                html_code += html_mes + '</td>'
+            
+            html_code += '</tr>'
+
+        html_code += '</table>'
+
+        # Recorre las asignaturas para crear la leyenda
+        for nom_asignatura in dias_asignaturas:
+            asignatura = nom_asignatura.split('_')[1]
+            subgrupos = profesor[nom_asignatura].split('-')[0]
+
+            # Crea una caja con el color de la asignatura
+            html_code += f'<div class="leyenda"><div class="caja-leyenda {asignatura.replace(" ", "_").lower()}"></div><div class="texto-leyenda"><h2>{nombre_asignaturas[asignatura]}</h2><h3>'
+            html_code += f'{dias[subgrupos[:2]]} {horas[subgrupos[2:]]} Grupo {" Grupo ".join([subgrupo.split("-")[1] for subgrupo in profesor[nom_asignatura].split(",")])}</h3></div></div><br>'
+
+        html_code += '</body></html>'
+
+        # Traduce los dias de la semana
+        html_code = html_code.replace('Mon', 'L')
+        html_code = html_code.replace('Tue', 'M')
+        html_code = html_code.replace('Wed', 'X')
+        html_code = html_code.replace('Thu', 'J')
+        html_code = html_code.replace('Fri', 'V')
+        html_code = html_code.replace('Sat', 'S')
+        html_code = html_code.replace('Sun', 'D')
+        
+        # Traduce los meses
+        html_code = html_code.replace('September', 'Septiembre')
+        html_code = html_code.replace('October', 'Octubre')
+        html_code = html_code.replace('November', 'Noviembre')
+        html_code = html_code.replace('December', 'Diciembre')
+        html_code = html_code.replace('February', 'Febrero')
+        html_code = html_code.replace('March', 'Marzo')
+        html_code = html_code.replace('April', 'Abril')
+        html_code = html_code.replace('May', 'Mayo')
+
+        # Crea el fichero HTML del calendario
+        html = io.open(PATH_PROFESORES / f'calendario_{identificador}.html', 'w', encoding='utf8')
+        # Escribe el codigo HTML al fichero
+        html.write(''.join(html_code))
+        html.close()
+    else:
+        cod_error = 7
+        error = 'Se ha introducido mal el identificador del profesor.'
+    
+    return cod_error, error
