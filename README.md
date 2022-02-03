@@ -1,7 +1,8 @@
 Licence
 =========================================================================
     *********************************************************************
-    Lista Grupos Laboratorio: Distribuye grupos de laboratorio y genera las listas en Excel y HTML. También crea un calendario personalizado para alumnos y/o profesores.
+    Lista Grupos Laboratorio: Distribuye grupos de laboratorio y genera las listas en Excel y HTML.
+    También crea un calendario personalizado para alumnos y/o profesores.
     Copyright (C) 2022 Andrea Magro Canas, Rubén Nuñez Judez, Universidad Politécnica de Madrid
 
     This program is free software: you can redistribute it and/or modify
