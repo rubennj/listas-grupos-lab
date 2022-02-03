@@ -186,8 +186,8 @@ class GUI(QMainWindow):
     
     # Carga un mensaje al pulsar el botón Acerca De
     def fn_acerca_de(self):
-        mensaje_alerta('Que', 'Autor: Andrea Magro Canas\n'+
-                        '- Licencia: .\n'+
+        mensaje_alerta('Que', 'Autor: Andrea Magro Canas.\n'+
+                        '- Licencia: Copyright (C) 2022 Andrea Magro Canas, Universidad Politécnica de Madrid.\n'+
                         '- Versión: v1.0.0.')
 
     # Carga los datos

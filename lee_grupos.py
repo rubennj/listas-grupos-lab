@@ -554,8 +554,8 @@ def asignar_grupos():
                 logging.error(lista_alumnos_sin_asignar)
                 break
 
-    # Si la lista de estudiantes esta vacia salta un error
-    if lista_estudiantes_subgrupos.empty:
+    # Si no ha habido errores, comprueba que la lista de estudiantes no este vacia
+    if cod_error == 0 and lista_estudiantes_subgrupos.empty:
         cod_error = 5
         error = f'No se ha introducido los Excels para realizar el reparto.'
 
