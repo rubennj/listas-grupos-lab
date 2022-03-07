@@ -584,7 +584,7 @@ def guardar_lista_grupos():
                 lista_datos_grupo = pd.read_excel(archivo, dtype={config.get('EXCEL', 'NUM_EXPEDIENTE'):str})
                 lista_datos_grupo.set_index(config.get('EXCEL', 'NUM_EXPEDIENTE'), inplace=True)
                 # Se agregan las columnas que se quieren visualizar en el excel
-                df = pd.concat([df, lista_datos_grupo[[config.get('EXCEL', 'APELLIDOS'), config.get('EXCEL', 'NOMBRE')]]])
+                df = pd.concat([df, lista_datos_grupo])
 
         # Borra los duplicados y luego los ordena segun su Nº de Expediente
         lista_estudiantes_datos = df[~df.index.duplicated()].sort_index()
